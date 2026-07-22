@@ -61,7 +61,7 @@
         <a
           href={href(item.slug)}
           aria-current={active(item.slug) ? 'page' : undefined}
-          class="mb-1 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold transition {active(
+          class="kasta-nav-link mb-1 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold transition {active(
             item.slug,
           )
             ? 'bg-kasta-100 text-kasta-900 dark:bg-kasta-950 dark:text-kasta-100'

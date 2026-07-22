@@ -36,6 +36,14 @@ memakai latar gelombang dan ilustrasi keuangan pada halaman publik serta onboard
 `BrandLogo` menjadi sumber tunggal logo pada marketing shell, ruang usaha, ruang pembina, dan
 halaman autentikasi.
 
+## Motion dan feedback
+
+Motion menggunakan durasi pendek dengan easing lembut agar terasa responsif tanpa mengganggu
+pencatatan. Root layout menampilkan progress bar tipis saat perpindahan route, lalu setiap halaman
+masuk dengan fade dan pergeseran kecil. Kartu, tombol, ikon, toast, dialog konfirmasi, dan skeleton
+loading memiliki feedback yang konsisten. Semua animasi menghormati `prefers-reduced-motion`; pada
+perangkat yang meminta pengurangan gerak, transisi dipersingkat dan animasi dekoratif dihentikan.
+
 ## Pemeriksaan kualitas
 
 ```bash

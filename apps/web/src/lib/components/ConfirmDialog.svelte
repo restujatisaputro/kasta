@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fade, scale } from 'svelte/transition';
   import Button from './Button.svelte';
 
   interface Props {
@@ -33,6 +34,7 @@
 
 {#if open}
   <div
+    transition:fade={{ duration: 180 }}
     class="fixed inset-0 z-50 grid place-items-center bg-slate-950/55 p-4"
     role="presentation"
     onclick={(event) => event.target === event.currentTarget && onCancel()}
@@ -41,6 +43,7 @@
     <div
       bind:this={dialog}
       tabindex="-1"
+      transition:scale={{ start: 0.96, duration: 220 }}
       class="kasta-card w-full max-w-md p-6 outline-none"
       role="alertdialog"
       aria-modal="true"

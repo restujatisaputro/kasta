@@ -27,7 +27,7 @@
       <nav class="hidden items-center gap-1 md:flex" aria-label="Navigasi utama">
         {#each nav as item (item.href)}
           <a
-            class="rounded-xl px-4 py-2.5 text-sm font-bold text-[var(--text-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
+            class="kasta-nav-link rounded-xl px-4 py-2.5 text-sm font-bold text-[var(--text-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
             href={item.href}>{item.label}</a
           >
         {/each}
@@ -50,7 +50,7 @@
         >
           {#each nav as item (item.href)}
             <a
-              class="block rounded-xl px-3 py-3 font-bold hover:bg-[var(--surface-muted)]"
+              class="kasta-nav-link block rounded-xl px-3 py-3 font-bold hover:bg-[var(--surface-muted)]"
               href={item.href}>{item.label}</a
             >
           {/each}

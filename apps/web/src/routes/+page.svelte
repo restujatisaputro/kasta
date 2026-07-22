@@ -80,7 +80,7 @@
       </div>
 
       <div class="relative mx-auto w-full max-w-xl">
-        <div class="kasta-card overflow-hidden p-4 sm:p-6">
+        <div class="kasta-card kasta-hero-card overflow-hidden p-4 sm:p-6">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs font-bold text-[var(--text-muted)]">Ringkasan bulan ini</p>
@@ -141,11 +141,11 @@
         jurnal secara otomatis.
       </p>
     </div>
-    <div class="mx-auto mt-9 grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="motion-stagger mx-auto mt-9 grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {#each features as feature (feature.title)}
         <Card
           ><div
-            class="grid h-11 w-11 place-items-center rounded-xl bg-kasta-100 text-kasta-800 dark:bg-kasta-950 dark:text-kasta-200"
+            class="kasta-icon-wrap grid h-11 w-11 place-items-center rounded-xl bg-kasta-100 text-kasta-800 dark:bg-kasta-950 dark:text-kasta-200"
           >
             <Icon name={feature.icon} />
           </div>
@@ -168,7 +168,7 @@
           jelas.
         </p>
       </div>
-      <ol class="grid gap-3">
+      <ol class="motion-stagger grid gap-3">
         {#each [['1', 'Buat profil usaha', 'Isi informasi dasar dan saldo awal usaha.'], ['2', 'Catat kegiatan harian', 'Gunakan Uang Masuk, Uang Keluar, atau Foto Nota.'], ['3', 'Lihat perkembangan', 'Baca laporan sederhana atau bahas bersama pembina.']] as step (step[0])}
           <li class="kasta-card flex gap-4 p-4">
             <span

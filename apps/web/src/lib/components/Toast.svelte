@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fly } from 'svelte/transition';
   import Icon from './Icon.svelte';
 
   interface Props {
@@ -18,6 +19,7 @@
 
 {#if open}
   <div
+    transition:fly={{ y: 14, duration: 240 }}
     class="fixed right-4 bottom-24 z-50 max-w-sm rounded-2xl border px-4 py-3 shadow-2xl sm:bottom-6 {styles[
       tone
     ]}"
