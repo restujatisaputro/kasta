@@ -9,7 +9,6 @@
     RecommendationStatus,
     ReportExportFormat,
   } from '@kasta/contracts';
-  import { resolve } from '$app/paths';
   import { onMount, tick } from 'svelte';
   import { z } from 'zod';
 
