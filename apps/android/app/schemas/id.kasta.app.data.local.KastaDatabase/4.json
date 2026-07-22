@@ -1,0 +1,455 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "631dd8375f5ce989a2194af2b756b358",
+    "entities": [
+      {
+        "tableName": "onboarding_drafts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `step` INTEGER NOT NULL, `businessName` TEXT NOT NULL, `businessType` TEXT NOT NULL, `categoryId` TEXT NOT NULL, `scale` TEXT NOT NULL, `establishedYear` TEXT NOT NULL, `employeeCount` TEXT NOT NULL, `address` TEXT NOT NULL, `village` TEXT NOT NULL, `district` TEXT NOT NULL, `city` TEXT NOT NULL, `province` TEXT NOT NULL, `businessPhone` TEXT NOT NULL, `businessEmail` TEXT NOT NULL, `currency` TEXT NOT NULL, `timezone` TEXT NOT NULL, `recordingMethod` TEXT NOT NULL, `paymentMethods` TEXT NOT NULL, `openingBalance` TEXT NOT NULL, `hasProducts` INTEGER NOT NULL, `tutorialDone` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "step",
+            "columnName": "step",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "businessName",
+            "columnName": "businessName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "businessType",
+            "columnName": "businessType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoryId",
+            "columnName": "categoryId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scale",
+            "columnName": "scale",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "establishedYear",
+            "columnName": "establishedYear",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "employeeCount",
+            "columnName": "employeeCount",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "village",
+            "columnName": "village",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "district",
+            "columnName": "district",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "city",
+            "columnName": "city",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "province",
+            "columnName": "province",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "businessPhone",
+            "columnName": "businessPhone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "businessEmail",
+            "columnName": "businessEmail",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currency",
+            "columnName": "currency",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timezone",
+            "columnName": "timezone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordingMethod",
+            "columnName": "recordingMethod",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "paymentMethods",
+            "columnName": "paymentMethods",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "openingBalance",
+            "columnName": "openingBalance",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hasProducts",
+            "columnName": "hasProducts",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tutorialDone",
+            "columnName": "tutorialDone",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "transactions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` TEXT NOT NULL, `serverId` TEXT, `businessId` TEXT NOT NULL, `deviceId` TEXT NOT NULL, `version` INTEGER NOT NULL, `syncStatus` TEXT NOT NULL, `operation` TEXT NOT NULL, `entryKind` TEXT NOT NULL, `transactionDate` TEXT NOT NULL, `amountRupiah` INTEGER NOT NULL, `categoryAccount` TEXT, `counterpartyName` TEXT, `paymentMethod` TEXT NOT NULL, `note` TEXT NOT NULL, `receiptUri` TEXT, `recurrenceFrequency` TEXT, `recurrenceInterval` INTEGER, `revisionReason` TEXT, `isDraft` INTEGER NOT NULL, `serverStatus` TEXT NOT NULL, `errorMessage` TEXT, `conflictId` TEXT, `conflictServerVersion` INTEGER, `conflictServerPayload` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `deletedAt` INTEGER, PRIMARY KEY(`localId`))",
+        "fields": [
+          {
+            "fieldPath": "localId",
+            "columnName": "localId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "serverId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "businessId",
+            "columnName": "businessId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceId",
+            "columnName": "deviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "syncStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operation",
+            "columnName": "operation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entryKind",
+            "columnName": "entryKind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transactionDate",
+            "columnName": "transactionDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amountRupiah",
+            "columnName": "amountRupiah",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoryAccount",
+            "columnName": "categoryAccount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "counterpartyName",
+            "columnName": "counterpartyName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "paymentMethod",
+            "columnName": "paymentMethod",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receiptUri",
+            "columnName": "receiptUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recurrenceFrequency",
+            "columnName": "recurrenceFrequency",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recurrenceInterval",
+            "columnName": "recurrenceInterval",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "revisionReason",
+            "columnName": "revisionReason",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isDraft",
+            "columnName": "isDraft",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverStatus",
+            "columnName": "serverStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "errorMessage",
+            "columnName": "errorMessage",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "conflictId",
+            "columnName": "conflictId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "conflictServerVersion",
+            "columnName": "conflictServerVersion",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conflictServerPayload",
+            "columnName": "conflictServerPayload",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deletedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "localId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_transactions_businessId_syncStatus",
+            "unique": false,
+            "columnNames": [
+              "businessId",
+              "syncStatus"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_businessId_syncStatus` ON `${TABLE_NAME}` (`businessId`, `syncStatus`)"
+          },
+          {
+            "name": "index_transactions_businessId_transactionDate",
+            "unique": false,
+            "columnNames": [
+              "businessId",
+              "transactionDate"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_businessId_transactionDate` ON `${TABLE_NAME}` (`businessId`, `transactionDate`)"
+          },
+          {
+            "name": "index_transactions_businessId_serverId",
+            "unique": true,
+            "columnNames": [
+              "businessId",
+              "serverId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_transactions_businessId_serverId` ON `${TABLE_NAME}` (`businessId`, `serverId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "notifications",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` TEXT NOT NULL, `serverId` TEXT NOT NULL, `businessId` TEXT NOT NULL, `category` TEXT NOT NULL, `title` TEXT NOT NULL, `message` TEXT NOT NULL, `entityType` TEXT NOT NULL, `entityId` TEXT NOT NULL, `actionPath` TEXT, `availableAt` TEXT, `readAt` TEXT, `createdAt` TEXT NOT NULL, PRIMARY KEY(`localId`))",
+        "fields": [
+          {
+            "fieldPath": "localId",
+            "columnName": "localId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "serverId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "businessId",
+            "columnName": "businessId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "message",
+            "columnName": "message",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entityType",
+            "columnName": "entityType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entityId",
+            "columnName": "entityId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actionPath",
+            "columnName": "actionPath",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "availableAt",
+            "columnName": "availableAt",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "readAt",
+            "columnName": "readAt",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "localId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_notifications_businessId_readAt_createdAt",
+            "unique": false,
+            "columnNames": [
+              "businessId",
+              "readAt",
+              "createdAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_notifications_businessId_readAt_createdAt` ON `${TABLE_NAME}` (`businessId`, `readAt`, `createdAt`)"
+          },
+          {
+            "name": "index_notifications_businessId_serverId",
+            "unique": true,
+            "columnNames": [
+              "businessId",
+              "serverId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_notifications_businessId_serverId` ON `${TABLE_NAME}` (`businessId`, `serverId`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '631dd8375f5ce989a2194af2b756b358')"
+    ]
+  }
+}

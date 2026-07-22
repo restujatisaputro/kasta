@@ -1,0 +1,15 @@
+.git/
+**/.venv/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/__pycache__/
+node_modules/
+.svelte-kit/
+apps/web/build/
+packages/*/dist/
+packages/contracts/src/generated/
+apps/android/.gradle/
+**/build/
+*.docx
+Rancangan_Arsitektur_Sistem_KASTA_Modular_Monolith_v0.1.md

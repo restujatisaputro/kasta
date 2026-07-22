@@ -1,0 +1,12 @@
+packages:
+  - apps/web
+  - packages/contracts
+  - packages/shared
+
+allowBuilds:
+  core-js: false
+  esbuild: true
+  protobufjs: false
+
+onlyBuiltDependencies:
+  - esbuild

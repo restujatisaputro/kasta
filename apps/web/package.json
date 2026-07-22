@@ -1,0 +1,40 @@
+{
+  "name": "kasta_web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "svelte-kit sync && vite build",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "dev": "vite dev",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@kasta/contracts": "workspace:*",
+    "@kasta/shared": "workspace:*",
+    "echarts": "^5.6.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@sveltejs/adapter-node": "^5.2.12",
+    "@sveltejs/kit": "^2.20.2",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tailwindcss/vite": "^4.0.14",
+    "@testing-library/svelte": "^5.2.8",
+    "@types/node": "^22.13.10",
+    "eslint": "^9.22.0",
+    "eslint-plugin-svelte": "^3.3.3",
+    "globals": "^16.0.0",
+    "jsdom": "^26.0.0",
+    "svelte": "^5.23.1",
+    "svelte-check": "^4.1.5",
+    "tailwindcss": "^4.0.14",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.0",
+    "vite": "^6.2.2",
+    "vitest": "^3.0.8"
+  }
+}

@@ -1,0 +1,106 @@
+openapi: 3.1.0
+info:
+  title: KASTA API
+  summary: API Keuangan dan Asistensi UMKM
+  version: 0.1.0
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+servers:
+  - url: /api/v1
+    description: Same-origin API endpoint
+tags:
+  - name: system
+    description: Health and operational endpoints
+paths:
+  /health/live:
+    get:
+      tags: [system]
+      operationId: getLiveness
+      summary: Check process liveness
+      security: []
+      responses:
+        '200':
+          description: API process is alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '4XX':
+          description: Unexpected client error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /health/ready:
+    get:
+      tags: [system]
+      operationId: getReadiness
+      summary: Check API readiness
+      security: []
+      responses:
+        '200':
+          description: API is ready to receive traffic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: A required dependency is unavailable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '4XX':
+          description: Unexpected client error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [status, service, version, timestamp]
+      properties:
+        status:
+          type: string
+          const: ok
+        service:
+          type: string
+          const: kasta-api
+        version:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    ProblemDetails:
+      type: object
+      additionalProperties: false
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri-reference
+        code:
+          type: string
+        correlationId:
+          type: string
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string

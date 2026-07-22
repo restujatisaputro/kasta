@@ -1,0 +1,159 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.14'
+          enable-cache: true
+      - run: uv sync --project apps/api --extra dev --locked
+      - run: uv run --project apps/api ruff check --config apps/api/pyproject.toml apps/api scripts tests
+      - run: uv run --project apps/api ruff format --check --config apps/api/pyproject.toml apps/api scripts tests
+      - run: uv run --project apps/api mypy --config-file apps/api/pyproject.toml apps/api/src
+      - run: uv run --project apps/api pytest apps/api/tests
+      - run: uv run --project apps/api python scripts/check_structure.py
+      - run: uv run --project apps/api python scripts/check_database_design.py
+      - run: uv run --project apps/api python scripts/check_test_catalog.py
+
+  web-and-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm check
+      - run: pnpm test
+      - run: pnpm build
+
+  e2e-accessibility:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/playwright/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/wrapper-validation@v4
+      - uses: gradle/actions/setup-gradle@v4
+      - run: chmod +x gradlew
+        working-directory: apps/android
+      - run: ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug
+        working-directory: apps/android
+
+  compose-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cp .env.example .env
+      - run: docker compose --env-file .env -f infrastructure/docker/compose.yaml config --quiet
+      - run: docker compose --env-file .env -f infrastructure/docker/compose.yaml build api web
+
+  dependency-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.14'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: uv export --project apps/api --frozen --no-dev --no-emit-project --format requirements-txt --output-file .security-requirements.txt
+      - run: uvx pip-audit --require-hashes -r .security-requirements.txt
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --audit-level high
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  postgres-security:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: kasta
+          POSTGRES_USER: kasta
+          POSTGRES_PASSWORD: kasta-ci-owner
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U kasta -d kasta"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      KASTA_ENVIRONMENT: test
+      KASTA_DATABASE_URL: postgresql+psycopg://kasta:kasta-ci-owner@localhost:5432/kasta
+      KASTA_DB_APP_USER: kasta_app
+      KASTA_DB_APP_PASSWORD: kasta-ci-runtime
+      POSTGRES_DB: kasta
+      POSTGRES_USER: kasta
+      PGPASSWORD: kasta-ci-owner
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.14'
+      - run: uv sync --project apps/api --extra dev --locked
+      - run: uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
+      - run: psql -h localhost -U kasta -d kasta -f scripts/postgres/configure-runtime-role.sql
+      - run: psql -h localhost -U kasta -d kasta -f scripts/postgres/test-rls.sql
+      - run: psql -h localhost -U kasta -d kasta -f scripts/postgres/test-financial-integrity.sql

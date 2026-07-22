@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "environments": ["local", "test", "staging", "production"],
+  "publicConfigurationPrefixes": ["PUBLIC_"],
+  "backendConfigurationPrefix": "KASTA_",
+  "containsSecrets": false
+}

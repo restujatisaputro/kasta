@@ -1,0 +1,72 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kasta-api"
+version = "0.1.0"
+description = "KASTA modular monolith API"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+  "alembic>=1.14,<2",
+  "argon2-cffi>=25.1,<26",
+  "cryptography>=45,<47",
+  "email-validator>=2.2,<3",
+  "fastapi>=0.115,<1",
+  "minio>=7.2,<8",
+  "pillow>=11.3,<13",
+  "pydantic>=2.10,<3",
+  "pydantic-settings>=2.7,<3",
+  "python-multipart>=0.0.20,<1",
+  "psycopg[binary]>=3.2,<4",
+  "pyjwt[crypto]>=2.10,<3",
+  "sqlalchemy>=2.0,<3",
+  "uvicorn[standard]>=0.34,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "aiosqlite>=0.21,<1",
+  "httpx>=0.28,<1",
+  "hypothesis>=6.157,<7",
+  "mypy>=1.14,<2",
+  "pytest>=8.3,<9",
+  "ruff>=0.9,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kasta_api"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+  "integration: requires external services such as PostgreSQL or MinIO",
+]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["kasta_api"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+mypy_path = "src"
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "alembic.*"
+ignore_missing_imports = true

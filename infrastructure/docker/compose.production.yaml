@@ -1,0 +1,274 @@
+name: kasta-production
+
+# Production stack. Load secrets from an external file, for example:
+# docker compose --env-file /opt/kasta/.env.production -f infrastructure/docker/compose.production.yaml up -d
+# The migration and runtime-role services are one-shot bootstrap jobs; they do
+# not run as part of the public API process.
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-api-environment: &api-environment
+  KASTA_ENVIRONMENT: production
+  KASTA_DEBUG: "false"
+  KASTA_LOG_LEVEL: ${KASTA_LOG_LEVEL:-INFO}
+  KASTA_LOG_FORMAT: ${KASTA_LOG_FORMAT:-json}
+  KASTA_API_VERSION: v1
+  KASTA_DATABASE_URL: postgresql+psycopg://${KASTA_DB_APP_USER:?KASTA_DB_APP_USER is required}:${KASTA_DB_APP_PASSWORD:?KASTA_DB_APP_PASSWORD is required}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB is required}
+  KASTA_DATABASE_ECHO: "false"
+  KASTA_DATABASE_POOL_SIZE: ${KASTA_DATABASE_POOL_SIZE:-10}
+  KASTA_DATABASE_MAX_OVERFLOW: ${KASTA_DATABASE_MAX_OVERFLOW:-20}
+  KASTA_CORS_ORIGINS: ${KASTA_CORS_ORIGINS:?KASTA_CORS_ORIGINS is required}
+  KASTA_CORS_ALLOW_CREDENTIALS: ${KASTA_CORS_ALLOW_CREDENTIALS:-true}
+  KASTA_REQUEST_ID_HEADER: ${KASTA_REQUEST_ID_HEADER:-X-Request-ID}
+  KASTA_JWT_SIGNING_KEY: ${KASTA_JWT_SIGNING_KEY:?KASTA_JWT_SIGNING_KEY is required}
+  KASTA_JWT_ALGORITHM: ${KASTA_JWT_ALGORITHM:-HS256}
+  KASTA_JWT_ISSUER: ${KASTA_JWT_ISSUER:-kasta-api}
+  KASTA_JWT_AUDIENCE: ${KASTA_JWT_AUDIENCE:-kasta-clients}
+  KASTA_TOKEN_HASH_KEY: ${KASTA_TOKEN_HASH_KEY:?KASTA_TOKEN_HASH_KEY is required}
+  KASTA_OUTBOX_ENCRYPTION_KEY: ${KASTA_OUTBOX_ENCRYPTION_KEY:?KASTA_OUTBOX_ENCRYPTION_KEY is required}
+  KASTA_ACCESS_TOKEN_MINUTES: ${KASTA_ACCESS_TOKEN_MINUTES:-15}
+  KASTA_REFRESH_TOKEN_DAYS: ${KASTA_REFRESH_TOKEN_DAYS:-30}
+  KASTA_TRUSTED_PROXY_CIDRS: ${KASTA_TRUSTED_PROXY_CIDRS:?KASTA_TRUSTED_PROXY_CIDRS is required}
+  KASTA_OBJECT_ENDPOINT: http://minio:9000
+  KASTA_OBJECT_PUBLIC_ENDPOINT: ${KASTA_OBJECT_PUBLIC_ENDPOINT:-https://apikasta.admniaga.com}
+  KASTA_OBJECT_BUCKET_RECEIPTS: ${KASTA_OBJECT_BUCKET_RECEIPTS:-kasta-receipts}
+  KASTA_OBJECT_BUCKET_BUSINESS_LOGOS: ${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS:-kasta-business-logos}
+  KASTA_OBJECT_ACCESS_KEY: ${KASTA_OBJECT_ACCESS_KEY:?KASTA_OBJECT_ACCESS_KEY is required}
+  KASTA_OBJECT_SECRET_KEY: ${KASTA_OBJECT_SECRET_KEY:?KASTA_OBJECT_SECRET_KEY is required}
+  KASTA_OBJECT_USE_SSL: "false"
+  KASTA_SIGNED_URL_SECONDS: ${KASTA_SIGNED_URL_SECONDS:-300}
+  KASTA_MALWARE_SCAN_ENABLED: ${KASTA_MALWARE_SCAN_ENABLED:-false}
+  KASTA_MALWARE_SCAN_HOST: ${KASTA_MALWARE_SCAN_HOST:-clamav}
+  KASTA_MALWARE_SCAN_PORT: ${KASTA_MALWARE_SCAN_PORT:-3310}
+  KASTA_MALWARE_SCAN_TIMEOUT_SECONDS: ${KASTA_MALWARE_SCAN_TIMEOUT_SECONDS:-10}
+  KASTA_MALWARE_SCAN_FAIL_CLOSED: ${KASTA_MALWARE_SCAN_FAIL_CLOSED:-true}
+  KASTA_FINANCIAL_RETENTION_DAYS: ${KASTA_FINANCIAL_RETENTION_DAYS:-1825}
+  KASTA_AUDIT_RETENTION_DAYS: ${KASTA_AUDIT_RETENTION_DAYS:-2555}
+  KASTA_SECURITY_DATA_RETENTION_DAYS: ${KASTA_SECURITY_DATA_RETENTION_DAYS:-90}
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:17-alpine}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - postgres-production-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    shm_size: 256m
+    mem_limit: 1g
+    cpus: 2.0
+    logging: *default-logging
+    networks: [backend]
+
+  minio:
+    image: ${MINIO_IMAGE:-quay.io/minio/minio:RELEASE.2025-10-15T17-29-55Z}
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER is required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is required}
+      MINIO_SERVER_URL: ${KASTA_OBJECT_PUBLIC_ENDPOINT:-https://apikasta.admniaga.com}
+    volumes:
+      - minio-production-data:/data
+    expose: ["9000"]
+    healthcheck:
+      test: [CMD-SHELL, "curl -fsS http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    mem_limit: 1g
+    cpus: 2.0
+    logging: *default-logging
+    networks: [backend]
+
+  minio-init:
+    image: ${MINIO_MC_IMAGE:-quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z}
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER is required}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is required}
+      KASTA_OBJECT_ACCESS_KEY: ${KASTA_OBJECT_ACCESS_KEY:?KASTA_OBJECT_ACCESS_KEY is required}
+      KASTA_OBJECT_SECRET_KEY: ${KASTA_OBJECT_SECRET_KEY:?KASTA_OBJECT_SECRET_KEY is required}
+      KASTA_OBJECT_BUCKET_RECEIPTS: ${KASTA_OBJECT_BUCKET_RECEIPTS:-kasta-receipts}
+      KASTA_OBJECT_BUCKET_BUSINESS_LOGOS: ${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS:-kasta-business-logos}
+    volumes:
+      - ./minio-kasta-policy.json:/policy/kasta.json:ro
+    entrypoint: [/bin/sh, -c]
+    command: >-
+      mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+      mc mb --ignore-existing "local/$${KASTA_OBJECT_BUCKET_RECEIPTS}" &&
+      mc mb --ignore-existing "local/$${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS}" &&
+      mc anonymous set none "local/$${KASTA_OBJECT_BUCKET_RECEIPTS}" &&
+      mc anonymous set none "local/$${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS}" &&
+      sed -e "s/kasta-receipts/$${KASTA_OBJECT_BUCKET_RECEIPTS}/g"
+      -e "s/kasta-business-logos/$${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS}/g"
+      /policy/kasta.json > /tmp/kasta-policy.json &&
+      (mc admin user add local "$${KASTA_OBJECT_ACCESS_KEY}" "$${KASTA_OBJECT_SECRET_KEY}" || true) &&
+      (mc admin policy create local kasta-app /tmp/kasta-policy.json || true) &&
+      mc admin policy attach local kasta-app --user "$${KASTA_OBJECT_ACCESS_KEY}"
+    logging: *default-logging
+    networks: [backend]
+
+  clamav:
+    image: ${CLAMAV_IMAGE:-clamav/clamav:1.4}
+    profiles: [security]
+    restart: unless-stopped
+    volumes:
+      - clamav-production-data:/var/lib/clamav
+    mem_limit: 1g
+    cpus: 2.0
+    logging: *default-logging
+    networks: [backend]
+
+  migrate:
+    image: kasta-api:${KASTA_IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/api.Dockerfile
+    restart: "no"
+    environment:
+      KASTA_ENVIRONMENT: staging
+      KASTA_DATABASE_URL: ${KASTA_MIGRATION_DATABASE_URL:?KASTA_MIGRATION_DATABASE_URL is required}
+    command: [alembic, -c, /opt/kasta/alembic.ini, upgrade, head]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging: *default-logging
+    networks: [backend]
+
+  db-role:
+    image: ${POSTGRES_IMAGE:-postgres:17-alpine}
+    restart: "no"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      KASTA_DB_APP_USER: ${KASTA_DB_APP_USER:?KASTA_DB_APP_USER is required}
+      KASTA_DB_APP_PASSWORD: ${KASTA_DB_APP_PASSWORD:?KASTA_DB_APP_PASSWORD is required}
+    volumes:
+      - ../../scripts/postgres/configure-runtime-role.sql:/scripts/configure-runtime-role.sql:ro
+    entrypoint: [/bin/sh, -c]
+    command: >-
+      PGPASSWORD="$${POSTGRES_PASSWORD}" psql -h postgres -U "$${POSTGRES_USER}"
+      -d "$${POSTGRES_DB}" -v ON_ERROR_STOP=1 -f /scripts/configure-runtime-role.sql
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    logging: *default-logging
+    networks: [backend]
+
+  api:
+    image: kasta-api:${KASTA_IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/api.Dockerfile
+    restart: unless-stopped
+    environment: *api-environment
+    depends_on:
+      db-role:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/live')"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    mem_limit: 768m
+    cpus: 2.0
+    logging: *default-logging
+    networks: [backend, edge]
+
+  web:
+    image: kasta-web:${KASTA_IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/web.Dockerfile
+      args:
+        PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-https://apikasta.admniaga.com/api/v1}
+        PUBLIC_APP_ENVIRONMENT: production
+    restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      ORIGIN: ${KASTA_SITE_ADDRESS:-https://appkasta.admniaga.com}
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-https://apikasta.admniaga.com/api/v1}
+      PUBLIC_APP_ENVIRONMENT: production
+    expose: ["3000"]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://localhost:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    mem_limit: 512m
+    cpus: 1.0
+    logging: *default-logging
+    networks: [edge]
+
+  caddy:
+    image: ${CADDY_IMAGE:-caddy:2.10-alpine}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ../caddy/Caddyfile.production:/etc/caddy/Caddyfile:ro
+      - caddy-production-data:/data
+      - caddy-production-config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    mem_limit: 256m
+    cpus: 0.5
+    logging: *default-logging
+    networks: [backend, edge]
+
+  # Demo seed is deliberately opt-in and never part of the default startup.
+  seed:
+    image: kasta-api:${KASTA_IMAGE_TAG:-latest}
+    profiles: [demo]
+    restart: "no"
+    environment:
+      KASTA_ENVIRONMENT: staging
+      KASTA_DATABASE_URL: ${KASTA_MIGRATION_DATABASE_URL:?KASTA_MIGRATION_DATABASE_URL is required}
+    command: [python, -m, kasta_api.seed_demo]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    logging: *default-logging
+    networks: [backend]
+
+volumes:
+  postgres-production-data:
+  minio-production-data:
+  caddy-production-data:
+  caddy-production-config:
+  clamav-production-data:
+
+networks:
+  backend:
+    internal: true
+  edge:

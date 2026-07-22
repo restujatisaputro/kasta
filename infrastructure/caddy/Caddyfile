@@ -1,0 +1,30 @@
+{$KASTA_SITE_ADDRESS:http://localhost:8080} {
+	encode zstd gzip
+
+	@api path /api/* /docs* /redoc* /openapi.json
+	handle @api {
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+		# HSTS is enabled only in Caddyfile.production; localhost is HTTP.
+		-Server
+	}
+}
+
+{$KASTA_OBJECT_ADDRESS:http://localhost:9002} {
+	reverse_proxy minio:9000
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		-Server
+	}
+}

@@ -1,0 +1,168 @@
+name: ${COMPOSE_PROJECT_NAME:-kasta-api}
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:17-alpine}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-kasta}
+      POSTGRES_USER: ${POSTGRES_USER:-kasta}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      KASTA_DB_APP_USER: ${KASTA_DB_APP_USER:-kasta_app}
+      KASTA_DB_APP_PASSWORD: ${KASTA_DB_APP_PASSWORD:?KASTA_DB_APP_PASSWORD must be set}
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - kasta-api-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  minio:
+    image: ${MINIO_IMAGE:-quay.io/minio/minio:latest}
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER must be set}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD must be set}
+    ports:
+      - '127.0.0.1:9000:9000'
+      - '127.0.0.1:9001:9001'
+    volumes:
+      - kasta-api-minio-data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:9000/minio/health/live || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  minio-init:
+    image: ${MINIO_MC_IMAGE:-quay.io/minio/mc:latest}
+    restart: 'no'
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?MINIO_ROOT_USER must be set}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD must be set}
+      KASTA_OBJECT_BUCKET_RECEIPTS: ${KASTA_OBJECT_BUCKET_RECEIPTS:-kasta-receipts-local}
+      KASTA_OBJECT_BUCKET_BUSINESS_LOGOS: ${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS:-kasta-business-logos-local}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+        mc mb --ignore-existing "local/$${KASTA_OBJECT_BUCKET_RECEIPTS}" &&
+        mc mb --ignore-existing "local/$${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS}" &&
+        mc anonymous set none "local/$${KASTA_OBJECT_BUCKET_RECEIPTS}" &&
+        mc anonymous set none "local/$${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS}"
+
+  migrate:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/api.Dockerfile
+    restart: "no"
+    environment:
+      KASTA_ENVIRONMENT: local
+      KASTA_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-kasta}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-kasta}
+    command: [alembic, -c, /opt/kasta/alembic.ini, upgrade, head]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  db-role:
+    image: ${POSTGRES_IMAGE:-postgres:17-alpine}
+    restart: "no"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-kasta}
+      POSTGRES_USER: ${POSTGRES_USER:-kasta}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      KASTA_DB_APP_USER: ${KASTA_DB_APP_USER:-kasta_app}
+      KASTA_DB_APP_PASSWORD: ${KASTA_DB_APP_PASSWORD:?KASTA_DB_APP_PASSWORD must be set}
+    volumes:
+      - ../../scripts/postgres/configure-runtime-role.sql:/scripts/configure-runtime-role.sql:ro
+    entrypoint: [/bin/sh, -c]
+    command: >-
+      PGPASSWORD="$${POSTGRES_PASSWORD}" psql -h postgres -U "$${POSTGRES_USER}"
+      -d "$${POSTGRES_DB}" -v ON_ERROR_STOP=1 -f /scripts/configure-runtime-role.sql
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/api.Dockerfile
+    restart: unless-stopped
+    environment:
+      KASTA_ENVIRONMENT: ${KASTA_ENVIRONMENT:-local}
+      KASTA_DEBUG: ${KASTA_DEBUG:-false}
+      KASTA_LOG_LEVEL: ${KASTA_LOG_LEVEL:-INFO}
+      KASTA_LOG_FORMAT: ${KASTA_LOG_FORMAT:-json}
+      KASTA_API_VERSION: v1
+      KASTA_DATABASE_URL: postgresql+psycopg://${KASTA_DB_APP_USER:-kasta_app}:${KASTA_DB_APP_PASSWORD}@postgres:5432/${POSTGRES_DB:-kasta}
+      KASTA_DATABASE_ECHO: ${KASTA_DATABASE_ECHO:-false}
+      KASTA_DATABASE_POOL_SIZE: ${KASTA_DATABASE_POOL_SIZE:-5}
+      KASTA_DATABASE_MAX_OVERFLOW: ${KASTA_DATABASE_MAX_OVERFLOW:-10}
+      KASTA_CORS_ORIGINS: ${KASTA_CORS_ORIGINS:-["http://localhost:5173","http://localhost:8080"]}
+      KASTA_CORS_ALLOW_CREDENTIALS: ${KASTA_CORS_ALLOW_CREDENTIALS:-true}
+      KASTA_REQUEST_ID_HEADER: ${KASTA_REQUEST_ID_HEADER:-X-Request-ID}
+      KASTA_JWT_SIGNING_KEY: ${KASTA_JWT_SIGNING_KEY:?KASTA_JWT_SIGNING_KEY must be set}
+      KASTA_JWT_ALGORITHM: ${KASTA_JWT_ALGORITHM:-HS256}
+      KASTA_JWT_ISSUER: ${KASTA_JWT_ISSUER:-kasta-api}
+      KASTA_JWT_AUDIENCE: ${KASTA_JWT_AUDIENCE:-kasta-clients}
+      KASTA_TOKEN_HASH_KEY: ${KASTA_TOKEN_HASH_KEY:?KASTA_TOKEN_HASH_KEY must be set}
+      KASTA_OUTBOX_ENCRYPTION_KEY: ${KASTA_OUTBOX_ENCRYPTION_KEY:?KASTA_OUTBOX_ENCRYPTION_KEY must be set}
+      KASTA_ACCESS_TOKEN_MINUTES: ${KASTA_ACCESS_TOKEN_MINUTES:-15}
+      KASTA_ONBOARDING_TOKEN_MINUTES: ${KASTA_ONBOARDING_TOKEN_MINUTES:-60}
+      KASTA_REFRESH_TOKEN_DAYS: ${KASTA_REFRESH_TOKEN_DAYS:-30}
+      KASTA_VERIFICATION_TOKEN_MINUTES: ${KASTA_VERIFICATION_TOKEN_MINUTES:-30}
+      KASTA_PASSWORD_RESET_TOKEN_MINUTES: ${KASTA_PASSWORD_RESET_TOKEN_MINUTES:-15}
+      KASTA_LOGIN_RATE_WINDOW_SECONDS: ${KASTA_LOGIN_RATE_WINDOW_SECONDS:-300}
+      KASTA_LOGIN_RATE_MAX_ATTEMPTS: ${KASTA_LOGIN_RATE_MAX_ATTEMPTS:-5}
+      KASTA_LOGIN_RATE_LOCK_SECONDS: ${KASTA_LOGIN_RATE_LOCK_SECONDS:-900}
+      KASTA_ACCOUNT_LOCK_MAX_ATTEMPTS: ${KASTA_ACCOUNT_LOCK_MAX_ATTEMPTS:-10}
+      KASTA_ACCOUNT_LOCK_SECONDS: ${KASTA_ACCOUNT_LOCK_SECONDS:-1800}
+      KASTA_API_RATE_LIMIT_PER_MINUTE: ${KASTA_API_RATE_LIMIT_PER_MINUTE:-600}
+      KASTA_SENSITIVE_RATE_LIMIT_PER_MINUTE: ${KASTA_SENSITIVE_RATE_LIMIT_PER_MINUTE:-30}
+      KASTA_UPLOAD_RATE_LIMIT_PER_MINUTE: ${KASTA_UPLOAD_RATE_LIMIT_PER_MINUTE:-20}
+      KASTA_TRUSTED_PROXY_CIDRS: ${KASTA_TRUSTED_PROXY_CIDRS:-["172.16.0.0/12"]}
+      KASTA_OBJECT_ENDPOINT: ${KASTA_OBJECT_ENDPOINT:-http://minio:9000}
+      KASTA_OBJECT_BUCKET_BUSINESS_LOGOS: ${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS:-kasta-business-logos-local}
+      KASTA_OBJECT_ACCESS_KEY: ${KASTA_OBJECT_ACCESS_KEY:?KASTA_OBJECT_ACCESS_KEY must be set}
+      KASTA_OBJECT_SECRET_KEY: ${KASTA_OBJECT_SECRET_KEY:?KASTA_OBJECT_SECRET_KEY must be set}
+      KASTA_OBJECT_USE_SSL: ${KASTA_OBJECT_USE_SSL:-false}
+      KASTA_OBJECT_PUBLIC_ENDPOINT: ${KASTA_OBJECT_PUBLIC_ENDPOINT:-http://localhost:9002}
+      KASTA_SIGNED_URL_SECONDS: ${KASTA_SIGNED_URL_SECONDS:-300}
+      KASTA_MALWARE_SCAN_ENABLED: ${KASTA_MALWARE_SCAN_ENABLED:-false}
+      KASTA_MALWARE_SCAN_HOST: ${KASTA_MALWARE_SCAN_HOST:-clamav}
+      KASTA_MALWARE_SCAN_PORT: ${KASTA_MALWARE_SCAN_PORT:-3310}
+      KASTA_MALWARE_SCAN_TIMEOUT_SECONDS: ${KASTA_MALWARE_SCAN_TIMEOUT_SECONDS:-10}
+      KASTA_MALWARE_SCAN_FAIL_CLOSED: ${KASTA_MALWARE_SCAN_FAIL_CLOSED:-true}
+      KASTA_FINANCIAL_RETENTION_DAYS: ${KASTA_FINANCIAL_RETENTION_DAYS:-1825}
+      KASTA_AUDIT_RETENTION_DAYS: ${KASTA_AUDIT_RETENTION_DAYS:-2555}
+      KASTA_SECURITY_DATA_RETENTION_DAYS: ${KASTA_SECURITY_DATA_RETENTION_DAYS:-90}
+    ports:
+      - '8000:8000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      db-role:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/live')
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+volumes:
+  kasta-api-postgres-data:
+  kasta-api-minio-data:

@@ -1,0 +1,71 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+!infrastructure/docker/.env.production.example
+*.pem
+*.key
+secrets/
+
+# Operating systems and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.mypy-notifications-final/
+.codex-cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.venv/
+venv/
+dist/
+build/
+
+# Node / SvelteKit
+node_modules/
+.pnpm-store/
+.svelte-kit/
+.vite/
+coverage/
+apps/web/build/
+packages/*/dist/
+*.tsbuildinfo
+
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+apps/android/.idea/
+apps/android/captures/
+apps/android/*.iml
+*.apk
+*.aab
+
+# Docker and local runtime data
+infrastructure/docker/data/
+.tmp/
+*.pid
+*.log
+
+# Generated contracts and reports
+packages/contracts/src/generated/*
+!packages/contracts/src/generated/.gitkeep
+packages/contracts/openapi/generated-kasta-api.json
+tests/reports/
+playwright-report/
+test-results/
+
+# Temporary Microsoft Office lock files
+~$*

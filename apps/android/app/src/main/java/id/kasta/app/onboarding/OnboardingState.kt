@@ -1,0 +1,97 @@
+package id.kasta.app.onboarding
+
+import id.kasta.app.data.local.OnboardingDraftEntity
+import id.kasta.app.data.remote.BusinessCategoryDto
+import id.kasta.app.data.remote.BusinessProfileDto
+
+enum class OnboardingScreen { FORM, PROFILE, TRANSACTIONS }
+
+data class OnboardingUiState(
+    val screen: OnboardingScreen = OnboardingScreen.FORM,
+    val step: Int = 1,
+    val accountUsesEmail: Boolean = true,
+    val fullName: String = "",
+    val identifier: String = "",
+    val password: String = "",
+    val verificationToken: String = "",
+    val onboardingToken: String = "",
+    val businessName: String = "",
+    val businessType: String = "TRADE",
+    val categoryId: String = "",
+    val scale: String = "MICRO",
+    val establishedYear: String = "",
+    val employeeCount: String = "0",
+    val logoUri: String? = null,
+    val address: String = "",
+    val village: String = "",
+    val district: String = "",
+    val city: String = "",
+    val province: String = "",
+    val businessPhone: String = "",
+    val businessEmail: String = "",
+    val currency: String = "IDR",
+    val timezone: String = "Asia/Jakarta",
+    val recordingMethod: String = "CASH",
+    val paymentMethods: Set<String> = setOf("CASH"),
+    val openingBalance: String = "0",
+    val hasProducts: Boolean = false,
+    val tutorialDone: Boolean = false,
+    val categories: List<BusinessCategoryDto> = emptyList(),
+    val profile: BusinessProfileDto? = null,
+    val businessId: String = "",
+    val accessToken: String = "",
+    val refreshToken: String = "",
+    val busy: Boolean = false,
+    val error: String? = null,
+    val notice: String? = null,
+) {
+    fun toDraft() =
+        OnboardingDraftEntity(
+            step = step.coerceAtLeast(3),
+            businessName = businessName,
+            businessType = businessType,
+            categoryId = categoryId,
+            scale = scale,
+            establishedYear = establishedYear,
+            employeeCount = employeeCount,
+            address = address,
+            village = village,
+            district = district,
+            city = city,
+            province = province,
+            businessPhone = businessPhone,
+            businessEmail = businessEmail,
+            currency = currency,
+            timezone = timezone,
+            recordingMethod = recordingMethod,
+            paymentMethods = paymentMethods.joinToString(","),
+            openingBalance = openingBalance,
+            hasProducts = hasProducts,
+            tutorialDone = tutorialDone,
+        )
+
+    fun restore(draft: OnboardingDraftEntity) =
+        copy(
+            step = draft.step,
+            businessName = draft.businessName,
+            businessType = draft.businessType,
+            categoryId = draft.categoryId,
+            scale = draft.scale,
+            establishedYear = draft.establishedYear,
+            employeeCount = draft.employeeCount,
+            address = draft.address,
+            village = draft.village,
+            district = draft.district,
+            city = draft.city,
+            province = draft.province,
+            businessPhone = draft.businessPhone,
+            businessEmail = draft.businessEmail,
+            currency = draft.currency,
+            timezone = draft.timezone,
+            recordingMethod = draft.recordingMethod,
+            paymentMethods = draft.paymentMethods.split(',').filter(String::isNotBlank).toSet(),
+            openingBalance = draft.openingBalance,
+            hasProducts = draft.hasProducts,
+            tutorialDone = draft.tutorialDone,
+        )
+}
