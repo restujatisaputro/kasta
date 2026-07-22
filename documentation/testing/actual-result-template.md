@@ -5,24 +5,24 @@ restore. Untuk automation, tautkan job dan artifact tanpa menyalin secret atau d
 
 ## Formulir eksekusi
 
-| Field                     | Nilai                               |
-| ------------------------- | ----------------------------------- |
-| Test case ID              | `QA-...`                            |
-| Judul                     |                                     |
+| Field                     | Nilai                                                          |
+| ------------------------- | -------------------------------------------------------------- |
+| Test case ID              | `QA-...`                                                       |
+| Judul                     |                                                                |
 | Jenis test                | Unit / Integration / API / Database / RLS / UI / E2E / lainnya |
-| Modul                     |                                     |
-| Tujuan                    |                                     |
-| Severity                  | Critical / High / Medium / Low      |
-| Priority                  | P0 / P1 / P2 / P3                   |
-| Build / commit SHA        |                                     |
-| Versi API / web / Android |                                     |
-| Alembic revision          |                                     |
-| Lingkungan                | Local / CI / Staging / Restore test |
-| Perangkat, OS, browser    |                                     |
-| Tenant dan akun sintetis  |                                     |
-| Tanggal dan zona waktu    |                                     |
-| Penguji                   |                                     |
-| Prasyarat                 |                                     |
+| Modul                     |                                                                |
+| Tujuan                    |                                                                |
+| Severity                  | Critical / High / Medium / Low                                 |
+| Priority                  | P0 / P1 / P2 / P3                                              |
+| Build / commit SHA        |                                                                |
+| Versi API / web / Android |                                                                |
+| Alembic revision          |                                                                |
+| Lingkungan                | Local / CI / Staging / Restore test                            |
+| Perangkat, OS, browser    |                                                                |
+| Tenant dan akun sintetis  |                                                                |
+| Tanggal dan zona waktu    |                                                                |
+| Penguji                   |                                                                |
+| Prasyarat                 |                                                                |
 
 ### Langkah dan hasil
 
@@ -38,7 +38,7 @@ restore. Untuk automation, tautkan job dan artifact tanpa menyalin secret atau d
 | ---------------------- | ------------------------------------------------------------------ |
 | Status akhir           | PASS / FAIL / BLOCKED / NOT RUN                                    |
 | Durasi                 |                                                                    |
-| Severity jika gagal    | Critical / High / Medium / Low (isi hanya jika FAIL)              |
+| Severity jika gagal    | Critical / High / Medium / Low (isi hanya jika FAIL)               |
 | Priority perbaikan     | P0 / P1 / P2 / P3                                                  |
 | Defect ID              |                                                                    |
 | Request/correlation ID |                                                                    |

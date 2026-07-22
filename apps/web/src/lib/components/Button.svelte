@@ -35,7 +35,7 @@
   };
 
   let classes = $derived(
-    `inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-extrabold transition disabled:pointer-events-none disabled:opacity-50 ${tones[variant]} ${full ? 'w-full' : ''}`,
+    `kasta-button inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-extrabold transition disabled:pointer-events-none disabled:opacity-50 ${tones[variant]} ${full ? 'w-full' : ''}`,
   );
 </script>
 

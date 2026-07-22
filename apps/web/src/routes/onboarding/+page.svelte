@@ -11,6 +11,7 @@
   import { z } from 'zod';
 
   import ProgressIndicator from '$lib/components/ProgressIndicator.svelte';
+  import BrandLogo from '$lib/components/BrandLogo.svelte';
   import {
     completeOnboarding,
     createAccount,
@@ -237,11 +238,11 @@
   <meta name="description" content="Siapkan akun dan profil usaha KASTA." />
 </svelte:head>
 
-<main class="min-h-screen bg-emerald-50/60 px-4 py-8 sm:px-6 sm:py-12">
+<main class="kasta-brand-hero min-h-screen px-4 py-8 sm:px-6 sm:py-12">
   <div class="mx-auto max-w-3xl">
-    <a href={resolve('/')} class="mb-7 inline-flex text-xl font-black text-emerald-950">KASTA</a>
+    <div class="mb-7"><BrandLogo /></div>
     <section
-      class="overflow-hidden rounded-[2rem] border border-emerald-100 bg-white shadow-xl shadow-emerald-100/60"
+      class="overflow-hidden rounded-[2rem] border border-kasta-200 bg-[var(--surface)] shadow-xl shadow-kasta-900/10"
     >
       <div class="border-b border-slate-100 px-6 py-6 sm:px-10">
         <ProgressIndicator current={step} total={TOTAL_STEPS} />
@@ -249,7 +250,7 @@
 
       <div class="p-6 sm:p-10">
         {#if notice}
-          <p class="mb-6 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{notice}</p>
+          <p class="mb-6 rounded-2xl bg-kasta-50 px-4 py-3 text-sm text-kasta-800">{notice}</p>
         {/if}
         {#if errorMessage}
           <p
@@ -338,11 +339,11 @@
           <h1 class="title">Bagaimana Anda menggunakan KASTA?</h1>
           <button
             type="button"
-            class="mt-8 flex w-full items-center gap-5 rounded-3xl border-2 border-emerald-600 bg-emerald-50 p-6 text-left"
+            class="mt-8 flex w-full items-center gap-5 rounded-3xl border-2 border-kasta-600 bg-kasta-50 p-6 text-left"
             onclick={nextStep}
           >
             <span
-              class="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-700 text-2xl text-white"
+              class="grid h-14 w-14 place-items-center rounded-2xl bg-kasta-700 text-2xl text-white"
               >🏪</span
             >
             <span
@@ -573,7 +574,7 @@
 <style>
   :global(label),
   fieldset {
-    color: #334155;
+    color: var(--text);
     font-size: 0.9rem;
     font-weight: 700;
   }
@@ -582,19 +583,19 @@
   :global(textarea) {
     margin-top: 0.5rem;
     width: 100%;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border);
     border-radius: 0.9rem;
-    background: white;
+    background: var(--surface);
     padding: 0.8rem 1rem;
-    color: #0f172a;
+    color: var(--text);
     font-weight: 500;
     outline: none;
   }
   :global(input:focus),
   :global(select:focus),
   :global(textarea:focus) {
-    border-color: #059669;
-    box-shadow: 0 0 0 3px #d1fae5;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgb(175 193 182 / 0.35);
   }
   :global(input[type='file']) {
     margin-top: 0.6rem;
@@ -609,7 +610,7 @@
     margin-bottom: 0.65rem;
   }
   .eyebrow {
-    color: #047857;
+    color: var(--brand);
     font-size: 0.75rem;
     font-weight: 800;
     letter-spacing: 0.1em;
@@ -617,7 +618,7 @@
   }
   .title {
     margin-top: 0.45rem;
-    color: #0f172a;
+    color: var(--brand-strong);
     font-size: clamp(1.75rem, 5vw, 2.4rem);
     font-weight: 900;
     line-height: 1.15;
@@ -625,7 +626,7 @@
   }
   .subtitle {
     margin-top: 0.75rem;
-    color: #64748b;
+    color: var(--text-muted);
     line-height: 1.65;
   }
   .form-grid {
@@ -635,25 +636,25 @@
   .choice-tab {
     border-radius: 0.75rem;
     padding: 0.65rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-weight: 700;
   }
   .choice-active {
-    background: white;
-    color: #065f46;
-    box-shadow: 0 1px 4px #cbd5e1;
+    background: var(--surface);
+    color: var(--brand-strong);
+    box-shadow: 0 1px 4px var(--border);
   }
   .primary-button {
     width: 100%;
     border-radius: 1rem;
-    background: #047857;
+    background: var(--brand);
     padding: 0.9rem 1.25rem;
     color: white;
     font-weight: 800;
     transition: 0.2s;
   }
   .primary-button:hover {
-    background: #065f46;
+    background: var(--brand-strong);
   }
   .primary-button:disabled {
     cursor: wait;
@@ -662,7 +663,7 @@
   .secondary-button {
     border-radius: 1rem;
     padding: 0.85rem 1.1rem;
-    color: #475569;
+    color: var(--text-muted);
     font-weight: 800;
   }
   .option-grid {
@@ -675,49 +676,49 @@
     min-height: 5.5rem;
     flex-direction: column;
     align-items: flex-start;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border);
     border-radius: 1rem;
     padding: 0.9rem;
     text-align: left;
   }
   .option-card strong {
-    color: #0f172a;
+    color: var(--brand-strong);
   }
   .option-card small {
     margin-top: 0.25rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-weight: 500;
     line-height: 1.35;
   }
   .option-active {
-    border-color: #059669;
-    background: #ecfdf5;
-    box-shadow: 0 0 0 1px #059669;
+    border-color: var(--brand);
+    background: var(--brand-soft);
+    box-shadow: 0 0 0 1px var(--brand);
   }
   .check-card {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border);
     border-radius: 1rem;
     padding: 0.9rem 1rem;
   }
   .check-card input {
     width: 1.1rem;
     height: 1.1rem;
-    accent-color: #047857;
+    accent-color: var(--brand);
   }
   .money-input {
     margin-top: 0.5rem;
     display: flex;
     align-items: center;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border);
     border-radius: 1rem;
     overflow: hidden;
   }
   .money-input span {
     padding-left: 1rem;
-    color: #047857;
+    color: var(--brand);
     font-weight: 900;
   }
   .money-input input {
@@ -730,7 +731,7 @@
     display: flex;
     gap: 1rem;
     border-radius: 1.1rem;
-    background: #f8fafc;
+    background: var(--surface-muted);
     padding: 1rem;
   }
   .tutorial-card > span {
@@ -740,21 +741,21 @@
     flex: none;
     place-items: center;
     border-radius: 999px;
-    background: #d1fae5;
-    color: #047857;
+    background: var(--brand-soft);
+    color: var(--brand);
     font-weight: 900;
   }
   .tutorial-card strong {
-    color: #0f172a;
+    color: var(--brand-strong);
   }
   .tutorial-card p {
     margin-top: 0.25rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.875rem;
     line-height: 1.5;
   }
   .label-note {
-    color: #94a3b8;
+    color: var(--text-muted);
     font-weight: 500;
   }
   @media (max-width: 520px) {

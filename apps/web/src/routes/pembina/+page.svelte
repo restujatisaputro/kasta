@@ -9,7 +9,6 @@
     RecommendationStatus,
     ReportExportFormat,
   } from '@kasta/contracts';
-  import { resolve } from '$app/paths';
   import { onMount, tick } from 'svelte';
   import { z } from 'zod';
 
@@ -27,6 +26,7 @@
   } from '$lib/api/mentors';
   import { formatRupiah } from '$lib/money/rupiah';
   import { authSession } from '$lib/stores/auth-session';
+  import BrandLogo from '$lib/components/BrandLogo.svelte';
 
   const noteSchema = z.object({ content: z.string().trim().min(3).max(3000) });
   const recommendationSchema = z.object({
@@ -361,12 +361,11 @@
   <meta name="description" content="Pantau UMKM binaan dan tindak lanjut pendampingan." />
 </svelte:head>
 
-<section class="text-slate-900 dark:text-slate-100">
-  <header class="border-b border-slate-200 bg-white">
+<section class="bg-[var(--surface-subtle)] text-[var(--text)]">
+  <header class="border-b border-[var(--border)] bg-[var(--surface)]">
     <div class="mx-auto flex max-w-[1500px] items-center justify-between px-5 py-4 sm:px-8">
       <div>
-        <a href={resolve('/')} class="text-xl font-black text-emerald-950">KASTA</a>
-        <p class="text-xs font-semibold text-slate-500">Ruang kerja pembina UMKM</p>
+        <BrandLogo context="Ruang kerja pembina UMKM" />
       </div>
       <div class="flex flex-wrap gap-2">
         {#each ['PDF', 'XLSX', 'CSV'] as format (format)}
@@ -385,13 +384,13 @@
   <div class="mx-auto max-w-[1500px] px-5 py-8 sm:px-8">
     <section class="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
       <div>
-        <p class="text-sm font-bold text-emerald-700">Pendampingan berbasis data</p>
+        <p class="text-sm font-bold text-kasta-700">Pendampingan berbasis data</p>
         <h1 class="mt-1 text-3xl font-black tracking-tight sm:text-4xl">Dashboard Pembina</h1>
         <p class="mt-2 max-w-3xl text-slate-600">
           Pantau kondisi usaha, beri rekomendasi, dan catat pendampingan tanpa dapat mengubah
           transaksi UMKM.
         </p>
-        <a class="mt-3 inline-block font-bold text-emerald-700" href="/pembina/akses">
+        <a class="mt-3 inline-block font-bold text-kasta-700" href="/pembina/akses">
           Atur permintaan akses →
         </a>
       </div>
@@ -433,7 +432,7 @@
       </section>
 
       {#if aggregate}
-        <section class="mt-5 rounded-3xl bg-emerald-950 p-6 text-white sm:p-7">
+        <section class="mt-5 rounded-3xl bg-kasta-950 p-6 text-white sm:p-7">
           <div class="grid gap-6 lg:grid-cols-[1.3fr_.7fr] lg:items-center">
             <div>
               <p class="text-sm font-bold text-emerald-300">Laporan agregat bulan ini</p>

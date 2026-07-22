@@ -37,14 +37,12 @@
     }
   });
   const rows = $derived(
-    items
-      .slice(0, 8)
-      .map((item) => ({
-        party: item.party.name,
-        due: item.due_date,
-        remaining: rupiah(item.remaining_amount),
-        status: item.status_label,
-      })),
+    items.slice(0, 8).map((item) => ({
+      party: item.party.name,
+      due: item.due_date,
+      remaining: rupiah(item.remaining_amount),
+      status: item.status_label,
+    })),
   );
 </script>
 

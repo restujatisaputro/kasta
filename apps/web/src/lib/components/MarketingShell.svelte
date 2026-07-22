@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import Button from './Button.svelte';
+  import BrandLogo from './BrandLogo.svelte';
   import DarkModeToggle from './DarkModeToggle.svelte';
 
   interface Props {
@@ -21,23 +22,12 @@
     class="sticky top-0 z-40 border-b border-[var(--border)] bg-[color:var(--surface)]/95 backdrop-blur"
   >
     <div class="mx-auto flex h-18 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-      <a href="/" class="flex items-center gap-2" aria-label="KASTA, kembali ke beranda">
-        <span
-          class="grid h-10 w-10 place-items-center rounded-xl bg-kasta-700 text-lg font-black text-white"
-          >K</span
-        >
-        <span
-          ><strong class="block text-lg leading-5 text-kasta-950 dark:text-kasta-100">KASTA</strong
-          ><small class="hidden text-[11px] text-[var(--text-muted)] sm:block"
-            >Keuangan dan Asistensi UMKM</small
-          ></span
-        >
-      </a>
+      <BrandLogo />
 
       <nav class="hidden items-center gap-1 md:flex" aria-label="Navigasi utama">
         {#each nav as item (item.href)}
           <a
-            class="rounded-xl px-4 py-2.5 text-sm font-bold text-[var(--text-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
+            class="kasta-nav-link rounded-xl px-4 py-2.5 text-sm font-bold text-[var(--text-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
             href={item.href}>{item.label}</a
           >
         {/each}
@@ -60,7 +50,7 @@
         >
           {#each nav as item (item.href)}
             <a
-              class="block rounded-xl px-3 py-3 font-bold hover:bg-[var(--surface-muted)]"
+              class="kasta-nav-link block rounded-xl px-3 py-3 font-bold hover:bg-[var(--surface-muted)]"
               href={item.href}>{item.label}</a
             >
           {/each}
@@ -80,7 +70,7 @@
   <footer class="border-t border-[var(--border)] bg-[var(--surface)]">
     <div class="mx-auto grid max-w-7xl gap-8 px-5 py-12 sm:px-6 md:grid-cols-[1.2fr_.8fr_.8fr]">
       <div>
-        <strong class="text-xl text-kasta-900 dark:text-kasta-100">KASTA</strong>
+        <BrandLogo context="Keuangan dan Asistensi UMKM" />
         <p class="mt-3 max-w-sm text-sm leading-6 text-[var(--text-muted)]">
           Pencatatan keuangan yang mudah dipahami pelaku UMKM dan tetap rapi di belakang layar.
         </p>
