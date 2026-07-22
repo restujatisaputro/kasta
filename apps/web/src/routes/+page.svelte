@@ -1,6 +1,7 @@
 <script lang="ts">
   import Button from '$lib/components/Button.svelte';
   import Card from '$lib/components/Card.svelte';
+  import BrandLogo from '$lib/components/BrandLogo.svelte';
   import Icon, { type IconName } from '$lib/components/Icon.svelte';
   import MarketingShell from '$lib/components/MarketingShell.svelte';
 
@@ -47,14 +48,12 @@
 </svelte:head>
 
 <MarketingShell>
-  <section class="relative overflow-hidden px-5 py-16 sm:px-6 sm:py-24">
-    <div
-      class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_85%_10%,#b3e6ca,transparent_28%),radial-gradient(circle_at_10%_70%,#fff0c2,transparent_24%)] opacity-80 dark:opacity-15"
-    ></div>
+  <section class="kasta-brand-hero relative overflow-hidden px-5 py-16 sm:px-6 sm:py-24">
     <div class="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.08fr_.92fr]">
       <div>
+        <div class="mb-8 lg:hidden"><BrandLogo context="Keuangan dan Asistensi UMKM" /></div>
         <div
-          class="inline-flex items-center gap-2 rounded-full border border-kasta-200 bg-kasta-50 px-3 py-1.5 text-xs font-extrabold text-kasta-800"
+          class="inline-flex items-center gap-2 rounded-full border border-kasta-200 bg-[color:var(--surface)]/80 px-3 py-1.5 text-xs font-extrabold text-kasta-800 shadow-sm backdrop-blur"
         >
           <span class="h-2 w-2 rounded-full bg-kasta-500"></span>Dibuat untuk UMKM Indonesia
         </div>
