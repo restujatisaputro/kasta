@@ -6,21 +6,21 @@ dan seluruh alamat email berada pada domain `example.test`.
 
 ## Isi seed
 
-| Entitas | Jumlah |
-| --- | ---: |
-| Organisasi pembina | 1 |
-| Pembina | 3 |
-| UMKM | 10 |
-| Pengguna | 20 |
-| Produk | 100 |
-| Transaksi terposting | 500 |
-| Jurnal | 500 (1.000 baris) |
-| Utang | 30 |
-| Piutang | 30 |
-| Nota dan metadata OCR | 100 |
-| Rekomendasi | 20 |
-| Sesi pendampingan | 20 |
-| Audit transaksi | 500 |
+| Entitas               |            Jumlah |
+| --------------------- | ----------------: |
+| Organisasi pembina    |                 1 |
+| Pembina               |                 3 |
+| UMKM                  |                10 |
+| Pengguna              |                20 |
+| Produk                |               100 |
+| Transaksi terposting  |               500 |
+| Jurnal                | 500 (1.000 baris) |
+| Utang                 |                30 |
+| Piutang               |                30 |
+| Nota dan metadata OCR |               100 |
+| Rekomendasi           |                20 |
+| Sesi pendampingan     |                20 |
+| Audit transaksi       |               500 |
 
 Sepuluh jenis usaha yang dipakai adalah warung makan, toko kelontong, kopi,
 laundry, fesyen, kerajinan, jasa digital, bengkel, katering, dan toko online.

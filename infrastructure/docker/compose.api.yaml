@@ -63,7 +63,7 @@ services:
     build:
       context: ../..
       dockerfile: infrastructure/docker/api.Dockerfile
-    restart: "no"
+    restart: 'no'
     environment:
       KASTA_ENVIRONMENT: local
       KASTA_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-kasta}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-kasta}
@@ -74,7 +74,7 @@ services:
 
   db-role:
     image: ${POSTGRES_IMAGE:-postgres:17-alpine}
-    restart: "no"
+    restart: 'no'
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-kasta}
       POSTGRES_USER: ${POSTGRES_USER:-kasta}
