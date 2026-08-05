@@ -256,7 +256,9 @@ class AuthRepository:
             businesses = list(
                 (
                     await self.session.scalars(
-                        select(Business).where(Business.id.in_(accessible_ids)).order_by(Business.name)
+                        select(Business)
+                        .where(Business.id.in_(accessible_ids))
+                        .order_by(Business.name)
                     )
                 ).all()
             )

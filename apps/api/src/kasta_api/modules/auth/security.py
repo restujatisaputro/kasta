@@ -74,7 +74,7 @@ class PasswordManager:
     def verify(self, stored_hash: str, password: str) -> bool:
         try:
             return self._hasher.verify(stored_hash, password)
-        except (VerificationError, InvalidHashError):
+        except VerificationError, InvalidHashError:
             return False
 
     def verify_dummy(self, password: str) -> None:
@@ -157,9 +157,7 @@ class TokenManager:
                 algorithms=[self._algorithm],
                 audience=self._audience,
                 issuer=self._issuer,
-                options={
-                    "require": ["iss", "aud", "sub", "sid", "jti", "typ", "exp", "iat"]
-                },
+                options={"require": ["iss", "aud", "sub", "sid", "jti", "typ", "exp", "iat"]},
             )
             if payload["typ"] != "access":
                 raise InvalidTokenError("unexpected token type")
