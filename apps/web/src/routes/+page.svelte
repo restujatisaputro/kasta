@@ -4,6 +4,8 @@
   import Icon, { type IconName } from '$lib/components/Icon.svelte';
   import MarketingShell from '$lib/components/MarketingShell.svelte';
 
+  let demoView = $state<'summary' | 'activity'>('summary');
+
   const features: Array<{ icon: IconName; title: string; text: string }> = [
     {
       icon: 'income',
@@ -49,7 +51,7 @@
 <MarketingShell>
   <section class="relative overflow-hidden px-5 py-16 sm:px-6 sm:py-24">
     <div
-      class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_85%_10%,#b3e6ca,transparent_28%),radial-gradient(circle_at_10%_70%,#fff0c2,transparent_24%)] opacity-80 dark:opacity-15"
+      class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_85%_10%,#b3e6ca,transparent_28%),radial-gradient(circle_at_10%_70%,#ffe3c6,transparent_24%),linear-gradient(135deg,#fffaf0_0%,#f2fbf5_55%,#e5f5e9_100%)] opacity-90 dark:opacity-15"
     ></div>
     <div class="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.08fr_.92fr]">
       <div>
@@ -81,17 +83,45 @@
       </div>
 
       <div class="relative mx-auto w-full max-w-xl">
-        <div class="kasta-card overflow-hidden p-4 sm:p-6">
+        <div class="relative h-64 overflow-hidden rounded-[2rem] border border-white/70 bg-kasta-950 shadow-2xl sm:h-72">
+          <img
+            src="/images/umkm-hero.png"
+            alt="Pelaku UMKM sedang melayani pelanggan di tokonya"
+            class="h-full w-full object-cover object-[65%_center]"
+            fetchpriority="high"
+          />
+          <div class="absolute inset-0 bg-gradient-to-r from-kasta-950/80 via-kasta-950/25 to-transparent"></div>
+          <div class="absolute bottom-5 left-5 max-w-[15rem] text-white sm:left-7">
+            <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-kasta-200">Cerita usaha</p>
+            <p class="mt-1 text-xl font-black leading-tight">Lebih siap melayani, lebih tenang mengelola.</p>
+          </div>
+        </div>
+        <div class="kasta-card relative -mt-12 overflow-hidden p-4 sm:-mt-16 sm:ml-8 sm:p-6">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs font-bold text-[var(--text-muted)]">Ringkasan bulan ini</p>
               <p class="text-lg font-black">Warung Bahagia</p>
             </div>
-            <span
-              class="rounded-full bg-kasta-100 px-3 py-1.5 text-xs font-extrabold text-kasta-800"
-              >Relatif sehat</span
-            >
+            <div class="flex rounded-xl bg-[var(--surface-muted)] p-1 text-[11px] font-extrabold">
+              <button
+                type="button"
+                class="rounded-lg px-2.5 py-1.5 transition {demoView === 'summary'
+                  ? 'bg-[var(--surface)] text-kasta-800 shadow-sm'
+                  : 'text-[var(--text-muted)]'}"
+                aria-pressed={demoView === 'summary'}
+                onclick={() => (demoView = 'summary')}>Ringkas</button
+              >
+              <button
+                type="button"
+                class="rounded-lg px-2.5 py-1.5 transition {demoView === 'activity'
+                  ? 'bg-[var(--surface)] text-kasta-800 shadow-sm'
+                  : 'text-[var(--text-muted)]'}"
+                aria-pressed={demoView === 'activity'}
+                onclick={() => (demoView = 'activity')}>Aktivitas</button
+              >
+            </div>
           </div>
+          {#if demoView === 'summary'}
           <div class="mt-5 grid grid-cols-2 gap-3">
             <div class="rounded-2xl bg-kasta-50 p-4">
               <p class="text-xs font-bold text-kasta-700">Uang Masuk</p>
@@ -124,6 +154,22 @@
               <Icon name="camera" /><span class="mt-1 block text-[11px] font-bold">Foto Nota</span>
             </div>
           </div>
+          {:else}
+            <div class="mt-5 grid gap-2">
+              {#each [['Penjualan warung', 'Rp420.000', 'Uang masuk'], ['Belanja bahan baku', 'Rp185.000', 'Uang keluar'], ['Cicilan pemasok', 'Rp300.000', 'Utang dibayar']] as activity (activity[0])}
+                <div class="flex items-center justify-between rounded-2xl border border-[var(--border)] px-4 py-3">
+                  <div>
+                    <p class="text-sm font-black">{activity[0]}</p>
+                    <p class="mt-0.5 text-xs text-[var(--text-muted)]">{activity[2]}</p>
+                  </div>
+                  <strong class="text-sm text-kasta-700">{activity[1]}</strong>
+                </div>
+              {/each}
+            </div>
+            <p class="mt-4 rounded-2xl bg-[#fff4e5] px-4 py-3 text-xs font-bold leading-5 text-[#8c4a2f]">
+              Semua aktivitas tersusun rapi, jadi Anda bisa mengambil keputusan dengan lebih percaya diri.
+            </p>
+          {/if}
         </div>
       </div>
     </div>
@@ -144,9 +190,9 @@
     </div>
     <div class="mx-auto mt-9 grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {#each features as feature (feature.title)}
-        <Card
+        <Card class="group transition duration-200 hover:-translate-y-1 hover:shadow-xl"
           ><div
-            class="grid h-11 w-11 place-items-center rounded-xl bg-kasta-100 text-kasta-800 dark:bg-kasta-950 dark:text-kasta-200"
+            class="grid h-11 w-11 place-items-center rounded-xl bg-kasta-100 text-kasta-800 transition group-hover:scale-110 dark:bg-kasta-950 dark:text-kasta-200"
           >
             <Icon name={feature.icon} />
           </div>

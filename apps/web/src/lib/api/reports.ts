@@ -2,7 +2,7 @@ import type { FinancialReport, ReportExportFormat, ReportFilters } from '@kasta/
 
 import { publicConfig } from '$lib/config/public';
 
-import { ApiError, apiRequest, bearerHeaders } from './client';
+import { ApiError, apiFetch, apiRequest, bearerHeaders } from './client';
 
 function query(filters: ReportFilters): string {
   const params = new URLSearchParams();
@@ -29,9 +29,9 @@ export async function exportFinancialReport(
   format: ReportExportFormat,
 ): Promise<void> {
   const params = query(filters);
-  const response = await fetch(
-    `${publicConfig.apiBaseUrl}/businesses/${businessId}/reports/financial/export?${params}&format=${format}`,
-    { headers: bearerHeaders(token), credentials: 'include' },
+  const response = await apiFetch(
+    `/businesses/${businessId}/reports/financial/export?${params}&format=${format}`,
+    { headers: bearerHeaders(token) },
   );
   if (!response.ok) {
     const problem = (await response.json().catch(() => undefined)) as

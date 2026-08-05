@@ -1,4 +1,4 @@
-import type { TokenPair } from '@kasta/contracts';
+import type { AccessToken, BusinessAccess, TokenPair } from '@kasta/contracts';
 import { apiRequest } from './client';
 
 export interface RegistrationResult {
@@ -11,7 +11,7 @@ export interface MessageResult {
 }
 
 export function login(payload: {
-  business_id: string;
+  business_id?: string;
   identifier: string;
   password: string;
   device_id: string;
@@ -23,6 +23,17 @@ export function login(payload: {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
+  });
+}
+
+export function listBusinesses(token: string): Promise<BusinessAccess[]> {
+  return apiRequest('/auth/businesses', { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function selectBusiness(businessId: string, token: string): Promise<AccessToken> {
+  return apiRequest(`/auth/businesses/${businessId}/select`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
   });
 }
 

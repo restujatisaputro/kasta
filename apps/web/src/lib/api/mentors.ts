@@ -16,7 +16,7 @@ import type {
 
 import { publicConfig } from '$lib/config/public';
 
-import { ApiError, apiRequest, bearerHeaders } from './client';
+import { ApiError, apiFetch, apiRequest, bearerHeaders } from './client';
 
 function jsonHeaders(token: string): HeadersInit {
   return { 'Content-Type': 'application/json', ...bearerHeaders(token) };
@@ -183,10 +183,9 @@ export function updateMentoringSession(
 }
 
 export async function exportMentorReport(token: string, format: ReportExportFormat): Promise<void> {
-  const response = await fetch(
-    `${publicConfig.apiBaseUrl}/mentors/me/report/export?format=${format}`,
-    { headers: bearerHeaders(token), credentials: 'include' },
-  );
+  const response = await apiFetch(`/mentors/me/report/export?format=${format}`, {
+    headers: bearerHeaders(token),
+  });
   if (!response.ok) {
     const problem = (await response.json().catch(() => undefined)) as
       { detail?: string } | undefined;
