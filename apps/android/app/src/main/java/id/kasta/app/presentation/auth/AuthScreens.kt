@@ -74,14 +74,6 @@ fun LoginScreen(
         Text("Lanjutkan pencatatan usaha Anda.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(28.dp))
         OutlinedTextField(
-            value = state.businessId,
-            onValueChange = { value -> onChange { it.copy(businessId = value) } },
-            label = { Text("ID usaha") },
-            supportingText = { Text("Diperoleh setelah profil usaha selesai dibuat") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth().testTag("login-business-id"),
-        )
-        OutlinedTextField(
             value = state.identifier,
             onValueChange = { value -> onChange { it.copy(identifier = value) } },
             label = { Text("Email atau nomor telepon") },
@@ -113,6 +105,42 @@ fun LoginScreen(
         }
         OutlinedButton(onClick = onRegister, modifier = Modifier.fillMaxWidth().height(52.dp).padding(top = 8.dp)) {
             Text("Buat akun baru")
+        }
+    }
+}
+
+@Composable
+fun BusinessSelectionScreen(
+    state: LoginUiState,
+    onSelect: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text("Pilih usaha", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
+        Text("Pilih ruang usaha yang ingin Anda buka.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(24.dp))
+        if (state.loading && state.businesses.isEmpty()) {
+            CircularProgressIndicator()
+        } else if (state.businesses.isEmpty()) {
+            Text(state.error ?: "Belum ada usaha aktif yang dapat Anda akses.", color = MaterialTheme.colorScheme.error)
+        } else {
+            state.businesses.forEach { business ->
+                OutlinedButton(
+                    onClick = { onSelect(business.businessId) },
+                    enabled = state.selectedBusinessId == null,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
+                ) {
+                    Column(Modifier.fillMaxWidth()) {
+                        Text(business.name, fontWeight = FontWeight.Bold)
+                        Text("${business.code} · ${business.role}", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        }
+        state.error?.takeIf { state.businesses.isNotEmpty() }?.let {
+            Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 10.dp))
         }
     }
 }
