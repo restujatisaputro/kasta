@@ -43,9 +43,10 @@ class AuthRepository
 
         fun hasPendingBusinessSelection(): Boolean = sessionStore.get()?.businessId?.isBlank() == true
 
-        suspend fun businesses() = sessionStore.get()?.let { session ->
-            authApi.businesses("Bearer ${session.accessToken}")
-        } ?: emptyList()
+        suspend fun businesses() =
+            sessionStore.get()?.let { session ->
+                authApi.businesses("Bearer ${session.accessToken}")
+            } ?: emptyList()
 
         suspend fun selectBusiness(businessId: String) {
             val session = sessionStore.get() ?: error("Sesi tidak ditemukan.")

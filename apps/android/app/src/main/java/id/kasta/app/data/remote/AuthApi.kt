@@ -44,7 +44,9 @@ interface AuthApi {
     ): AuthTokenPairDto
 
     @GET("auth/businesses")
-    suspend fun businesses(@Header("Authorization") authorization: String): List<BusinessAccessDto>
+    suspend fun businesses(
+        @Header("Authorization") authorization: String,
+    ): List<BusinessAccessDto>
 
     @POST("auth/businesses/{business_id}/select")
     suspend fun selectBusiness(

@@ -2,8 +2,8 @@ package id.kasta.app.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import id.kasta.app.data.remote.BusinessAccessDto
 import dagger.hilt.android.lifecycle.HiltViewModel
+import id.kasta.app.data.remote.BusinessAccessDto
 import id.kasta.app.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,7 +49,11 @@ class AuthViewModel
             viewModelScope.launch {
                 mutableState.update { it.copy(loading = true, error = null) }
                 runCatching { repository.login(current.identifier.trim(), current.password) }
-                    .onSuccess { mutableState.update { it.copy(loading = false, authenticated = true, businessSelected = false, password = "") } }
+                    .onSuccess {
+                        mutableState.update {
+                            it.copy(loading = false, authenticated = true, businessSelected = false, password = "")
+                        }
+                    }
                     .onFailure { error ->
                         mutableState.update {
                             it.copy(loading = false, error = error.message ?: "Belum dapat masuk. Periksa data Anda.")
@@ -63,7 +67,11 @@ class AuthViewModel
                 mutableState.update { it.copy(loading = true, error = null) }
                 runCatching { repository.businesses() }
                     .onSuccess { businesses -> mutableState.update { it.copy(loading = false, businesses = businesses) } }
-                    .onFailure { error -> mutableState.update { it.copy(loading = false, error = error.message ?: "Daftar usaha belum dapat dimuat.") } }
+                    .onFailure { error ->
+                        mutableState.update {
+                            it.copy(loading = false, error = error.message ?: "Daftar usaha belum dapat dimuat.")
+                        }
+                    }
             }
         }
 
@@ -72,7 +80,15 @@ class AuthViewModel
                 mutableState.update { it.copy(loading = true, selectedBusinessId = businessId, error = null) }
                 runCatching { repository.selectBusiness(businessId) }
                     .onSuccess { mutableState.update { it.copy(loading = false, businessSelected = true, selectedBusinessId = null) } }
-                    .onFailure { error -> mutableState.update { it.copy(loading = false, selectedBusinessId = null, error = error.message ?: "Usaha belum dapat dipilih.") } }
+                    .onFailure { error ->
+                        mutableState.update {
+                            it.copy(
+                                loading = false,
+                                selectedBusinessId = null,
+                                error = error.message ?: "Usaha belum dapat dipilih.",
+                            )
+                        }
+                    }
             }
         }
 
