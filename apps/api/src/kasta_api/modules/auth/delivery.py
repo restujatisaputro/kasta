@@ -9,7 +9,7 @@ from email.utils import parseaddr
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import select
 
 from kasta_api.core.config import Settings
 from kasta_api.db.session import AsyncSessionFactory
@@ -107,6 +107,17 @@ def _send_whatsapp_message(settings: Settings, destination: str, payload: dict[s
 
 
 async def _deliver_batch(settings: Settings, cipher: OutboxCipher) -> int:
+    enabled_channels = [
+        channel
+        for channel, enabled in (
+            ("EMAIL", settings.mail_enabled),
+            ("WHATSAPP", settings.whatsapp_enabled),
+        )
+        if enabled
+    ]
+    if not enabled_channels:
+        return 0
+
     async with AsyncSessionFactory() as session:
         rows = list(
             (
@@ -114,13 +125,7 @@ async def _deliver_batch(settings: Settings, cipher: OutboxCipher) -> int:
                     select(AuthDeliveryOutbox)
                     .where(
                         AuthDeliveryOutbox.sent_at.is_(None),
-                        or_(
-                            and_(AuthDeliveryOutbox.channel == "EMAIL", settings.mail_enabled),
-                            and_(
-                                AuthDeliveryOutbox.channel == "WHATSAPP",
-                                settings.whatsapp_enabled,
-                            ),
-                        ),
+                        AuthDeliveryOutbox.channel.in_(enabled_channels),
                         AuthDeliveryOutbox.attempts < 10,
                     )
                     .order_by(AuthDeliveryOutbox.created_at)
