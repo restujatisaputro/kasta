@@ -36,6 +36,11 @@ class CurrentPrincipal(BaseModel):
     support_grant_id: UUID | None = None
 
 
+class SelectionPrincipal(BaseModel):
+    user_id: UUID
+    session_id: UUID
+
+
 @lru_cache
 def get_password_manager() -> PasswordManager:
     return PasswordManager()
@@ -69,6 +74,45 @@ BearerToken = Annotated[str, Depends(oauth2_scheme)]
 PermissionDependency = Callable[..., Coroutine[Any, Any, CurrentPrincipal]]
 
 
+def require_business_selection() -> Callable[..., Coroutine[Any, Any, SelectionPrincipal]]:
+    async def dependency(
+        token: BearerToken,
+        session: DatabaseSession,
+        settings: SettingsDependency,
+    ) -> SelectionPrincipal:
+        try:
+            claims = TokenManager(settings).decode_access_token(token)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=str(exc),
+                headers={"WWW-Authenticate": "Bearer"},
+            ) from exc
+
+        device_session = await AuthRepository(session).get_device_session(claims.session_id)
+        now = datetime.now(UTC)
+        expires_at = device_session.expires_at if device_session is not None else None
+        if expires_at is not None and expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=UTC)
+        if (
+            claims.business_id is not None
+            or device_session is None
+            or device_session.user_id != claims.user_id
+            or device_session.business_id is not None
+            or device_session.revoked_at is not None
+            or expires_at is None
+            or expires_at <= now
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Sesi pemilihan usaha tidak aktif.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return SelectionPrincipal(user_id=claims.user_id, session_id=claims.session_id)
+
+    return dependency
+
+
 def require_permission(permission: PermissionCode | str) -> PermissionDependency:
     required_permission = permission.value if isinstance(permission, PermissionCode) else permission
 
@@ -100,7 +144,8 @@ def require_permission(permission: PermissionCode | str) -> PermissionDependency
         if expires_at is not None and expires_at.tzinfo is None:
             expires_at = expires_at.replace(tzinfo=UTC)
         if (
-            device_session is None
+            claims.business_id is None
+            or device_session is None
             or device_session.user_id != claims.user_id
             or device_session.business_id != business_id
             or device_session.revoked_at is not None
@@ -207,6 +252,13 @@ def require_token_permission(permission: PermissionCode | str) -> PermissionDepe
                 detail=str(exc),
                 headers={"WWW-Authenticate": "Bearer"},
             ) from exc
+
+        if claims.business_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Pilih usaha terlebih dahulu.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
         repository = AuthRepository(session)
         device_session = await repository.get_device_session(claims.session_id)

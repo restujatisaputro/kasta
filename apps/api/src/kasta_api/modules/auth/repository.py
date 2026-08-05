@@ -185,6 +185,89 @@ class AuthRepository:
             mentor_id=access.mentor_id,
         )
 
+    async def list_accessible_businesses(
+        self, user_id: UUID
+    ) -> list[tuple[Business, AuthorizationRecord]]:
+        """Return active businesses the user may enter after authenticating."""
+
+        is_super_admin = await self.session.scalar(
+            select(Role.id)
+            .join(User, User.platform_role_id == Role.id)
+            .where(User.id == user_id, Role.code == RoleCode.SUPER_ADMIN.value)
+        )
+        if is_super_admin is not None:
+            businesses = list(
+                (
+                    await self.session.scalars(
+                        select(Business)
+                        .where(
+                            Business.status == "ACTIVE",
+                            Business.deleted_at.is_(None),
+                        )
+                        .order_by(Business.name)
+                    )
+                ).all()
+            )
+        else:
+            direct_businesses = (
+                select(BusinessMember.business_id)
+                .join(Business, Business.id == BusinessMember.business_id)
+                .where(
+                    BusinessMember.user_id == user_id,
+                    BusinessMember.status == "ACTIVE",
+                    BusinessMember.deleted_at.is_(None),
+                    Business.status == "ACTIVE",
+                    Business.deleted_at.is_(None),
+                )
+            )
+            organization_businesses = (
+                select(Business.id)
+                .join(
+                    OrganizationMember,
+                    OrganizationMember.organization_id == Business.organization_id,
+                )
+                .where(
+                    OrganizationMember.user_id == user_id,
+                    OrganizationMember.status == "ACTIVE",
+                    OrganizationMember.deleted_at.is_(None),
+                    Business.status == "ACTIVE",
+                    Business.deleted_at.is_(None),
+                )
+            )
+            mentor_businesses = (
+                select(MentorBusinessAccess.business_id)
+                .join(Mentor, Mentor.id == MentorBusinessAccess.mentor_id)
+                .join(Business, Business.id == MentorBusinessAccess.business_id)
+                .where(
+                    Mentor.user_id == user_id,
+                    Mentor.status == "ACTIVE",
+                    Mentor.deleted_at.is_(None),
+                    MentorBusinessAccess.status == "ACTIVE",
+                    MentorBusinessAccess.deleted_at.is_(None),
+                    or_(
+                        MentorBusinessAccess.expires_at.is_(None),
+                        MentorBusinessAccess.expires_at > datetime.now(UTC),
+                    ),
+                    Business.status == "ACTIVE",
+                    Business.deleted_at.is_(None),
+                )
+            )
+            accessible_ids = direct_businesses.union(organization_businesses, mentor_businesses)
+            businesses = list(
+                (
+                    await self.session.scalars(
+                        select(Business).where(Business.id.in_(accessible_ids)).order_by(Business.name)
+                    )
+                ).all()
+            )
+
+        result: list[tuple[Business, AuthorizationRecord]] = []
+        for business in businesses:
+            authorization = await self.resolve_authorization(user_id, business.id)
+            if authorization is not None:
+                result.append((business, authorization))
+        return result
+
     async def _support_authorization(
         self, role: Role, user_id: UUID, business_id: UUID
     ) -> AuthorizationRecord:

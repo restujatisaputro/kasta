@@ -32,7 +32,16 @@ def normalize_identifier(identifier: str) -> tuple[str, str]:
     value = identifier.strip()
     if "@" in value:
         try:
-            normalized = validate_email(value, check_deliverability=False).normalized.lower()
+            # ``example.test`` is reserved for the deterministic demo seed. The
+            # validator rejects special-use domains unless test mode is enabled,
+            # which otherwise makes every documented demo account impossible to
+            # authenticate. Keep the exception limited to that exact domain.
+            test_environment = value.rpartition("@")[2].lower() == "example.test"
+            normalized = validate_email(
+                value,
+                check_deliverability=False,
+                test_environment=test_environment,
+            ).normalized.lower()
         except EmailNotValidError as exc:
             raise ValueError("Alamat email tidak valid.") from exc
         return "EMAIL", normalized
@@ -65,7 +74,7 @@ class PasswordManager:
     def verify(self, stored_hash: str, password: str) -> bool:
         try:
             return self._hasher.verify(stored_hash, password)
-        except VerificationError, InvalidHashError:
+        except (VerificationError, InvalidHashError):
             return False
 
     def verify_dummy(self, password: str) -> None:
@@ -82,7 +91,7 @@ class PasswordManager:
 class AccessTokenClaims:
     user_id: UUID
     session_id: UUID
-    business_id: UUID
+    business_id: UUID | None
     token_id: UUID
     expires_at: datetime
 
@@ -107,20 +116,23 @@ class TokenManager:
     def access_token_seconds(self) -> int:
         return self._access_minutes * 60
 
-    def create_access_token(self, user_id: UUID, session_id: UUID, business_id: UUID) -> str:
+    def create_access_token(
+        self, user_id: UUID, session_id: UUID, business_id: UUID | None = None
+    ) -> str:
         now = utc_now()
         payload: dict[str, Any] = {
             "iss": self._issuer,
             "aud": self._audience,
             "sub": str(user_id),
             "sid": str(session_id),
-            "bid": str(business_id),
             "jti": str(uuid4()),
             "typ": "access",
             "iat": now,
             "nbf": now,
             "exp": now + timedelta(minutes=self._access_minutes),
         }
+        if business_id is not None:
+            payload["bid"] = str(business_id)
         return jwt.encode(payload, self._signing_key, algorithm=self._algorithm)
 
     def create_onboarding_token(self, user_id: UUID, lifetime_minutes: int) -> str:
@@ -146,7 +158,7 @@ class TokenManager:
                 audience=self._audience,
                 issuer=self._issuer,
                 options={
-                    "require": ["iss", "aud", "sub", "sid", "bid", "jti", "typ", "exp", "iat"]
+                    "require": ["iss", "aud", "sub", "sid", "jti", "typ", "exp", "iat"]
                 },
             )
             if payload["typ"] != "access":
@@ -155,7 +167,7 @@ class TokenManager:
             return AccessTokenClaims(
                 user_id=UUID(str(payload["sub"])),
                 session_id=UUID(str(payload["sid"])),
-                business_id=UUID(str(payload["bid"])),
+                business_id=UUID(str(payload["bid"])) if payload.get("bid") else None,
                 token_id=UUID(str(payload["jti"])),
                 expires_at=expires_at,
             )

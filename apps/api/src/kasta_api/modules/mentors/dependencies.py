@@ -38,6 +38,13 @@ def require_mentor(permission: PermissionCode | None = None) -> MentorDependency
                 headers={"WWW-Authenticate": "Bearer"},
             ) from exc
 
+        if claims.business_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Pilih usaha terlebih dahulu.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
         mentor = await MentorRepository(session).mentor_for_user(claims.user_id)
         if mentor is None:
             raise HTTPException(

@@ -44,6 +44,23 @@ class Settings(BaseSettings):
     refresh_token_days: int = Field(default=30, ge=1, le=365)
     verification_token_minutes: int = Field(default=30, ge=5, le=1440)
     password_reset_token_minutes: int = Field(default=15, ge=5, le=120)
+    mail_enabled: bool = False
+    smtp_host: str = "localhost"
+    smtp_port: int = Field(default=25, ge=1, le=65535)
+    smtp_username: str | None = None
+    smtp_password: SecretStr | None = None
+    smtp_ssl: bool = False
+    smtp_starttls: bool = False
+    mail_from: str = "KASTA <noreply@localhost>"
+    mail_outbox_poll_seconds: float = Field(default=2.0, ge=0.5, le=60.0)
+    mail_outbox_batch_size: int = Field(default=20, ge=1, le=100)
+    whatsapp_enabled: bool = False
+    whatsapp_api_base_url: AnyHttpUrl = AnyHttpUrl("https://graph.facebook.com")
+    whatsapp_graph_api_version: str = "v23.0"
+    whatsapp_phone_number_id: str | None = None
+    whatsapp_access_token: SecretStr | None = None
+    whatsapp_template_name: str = "kasta_verification"
+    whatsapp_template_language: str = "id"
     login_rate_window_seconds: int = Field(default=300, ge=60, le=3600)
     login_rate_max_attempts: int = Field(default=5, ge=2, le=20)
     login_rate_lock_seconds: int = Field(default=900, ge=60, le=86400)
@@ -125,6 +142,13 @@ class Settings(BaseSettings):
             raise ValueError("Production configuration does not meet the security baseline")
         if self.cors_allow_credentials and "*" in self.cors_origin_strings:
             raise ValueError("Wildcard CORS tidak boleh digunakan bersama credentials")
+        if self.whatsapp_enabled and (
+            not self.whatsapp_phone_number_id or self.whatsapp_access_token is None
+        ):
+            raise ValueError(
+                "KASTA_WHATSAPP_PHONE_NUMBER_ID dan KASTA_WHATSAPP_ACCESS_TOKEN wajib diisi "
+                "saat KASTA_WHATSAPP_ENABLED aktif"
+            )
         return self
 
 

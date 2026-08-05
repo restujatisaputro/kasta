@@ -96,6 +96,11 @@ Semua konfigurasi backend memakai prefix `KASTA_`. Nilai lokal tersedia di `.env
 | `KASTA_JWT_SIGNING_KEY`              | Signing key autentikasi; nilai production wajib unik          |
 | `KASTA_TOKEN_HASH_KEY`               | Kunci HMAC untuk refresh token, device ID, dan rate-limit key |
 | `KASTA_OUTBOX_ENCRYPTION_KEY`        | Kunci AES-GCM base64 32 byte untuk payload outbox autentikasi |
+| `KASTA_WHATSAPP_ENABLED`             | Mengaktifkan pengiriman kode autentikasi lewat WhatsApp     |
+| `KASTA_WHATSAPP_PHONE_NUMBER_ID`    | Phone Number ID WhatsApp Cloud API                         |
+| `KASTA_WHATSAPP_ACCESS_TOKEN`       | System-user access token WhatsApp Cloud API                |
+| `KASTA_WHATSAPP_TEMPLATE_NAME`      | Nama template WhatsApp yang sudah disetujui Meta           |
+| `KASTA_WHATSAPP_TEMPLATE_LANGUAGE`  | Kode bahasa template, misalnya `id`                       |
 | `KASTA_ACCESS_TOKEN_MINUTES`         | Umur JWT access token                                         |
 | `KASTA_ONBOARDING_TOKEN_MINUTES`     | Umur token singkat setelah verifikasi akun                    |
 | `KASTA_REFRESH_TOKEN_DAYS`           | Umur maksimum sesi/refresh token                              |
@@ -122,8 +127,9 @@ secret; pemakaian ulang token lama mencabut seluruh session family. Password dis
 Argon2id. Reset password mencabut semua sesi pengguna.
 
 Token verifikasi dan reset tidak pernah disimpan mentah. API menaruh token ke tabel
-`auth_delivery_outbox` dalam payload AES-GCM untuk dikirim worker email/SMS. Worker pengiriman
-merupakan integrasi deployment berikutnya; jangan menampilkan token tersebut di response atau log.
+`auth_delivery_outbox` dalam payload AES-GCM untuk dikirim worker email/WhatsApp. Worker pengiriman
+memakai template WhatsApp yang dikonfigurasi di deployment; jangan menampilkan token tersebut di
+response atau log.
 
 Endpoint publik tidak memiliki principal sehingga tidak memeriksa permission. Semua endpoint yang
 sudah terautentikasi wajib membawa `business_id` dan memakai `require_permission(...)`.

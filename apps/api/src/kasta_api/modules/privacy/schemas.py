@@ -15,7 +15,7 @@ class ExportedMembership(BaseModel):
 
 class ExportedSession(BaseModel):
     id: UUID
-    business_id: UUID
+    business_id: UUID | None
     platform: str
     device_name: str | None
     app_version: str | None
