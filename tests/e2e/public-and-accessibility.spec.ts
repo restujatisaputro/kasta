@@ -30,12 +30,9 @@ test('navigasi keyboard menyediakan skip link dan urutan fokus form', async ({ p
   await expect(page).toHaveURL(/#main-content$/);
 
   await page.goto('/login');
-  const businessId = page.getByLabel('ID usaha');
   const identifier = page.getByLabel('Email atau nomor telepon');
   const password = page.getByLabel('Kata sandi');
-  await businessId.focus();
-  await page.keyboard.press('Tab');
-  await expect(identifier).toBeFocused();
+  await identifier.focus();
   await page.keyboard.press('Tab');
   await expect(password).toBeFocused();
 });
