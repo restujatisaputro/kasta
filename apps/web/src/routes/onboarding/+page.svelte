@@ -171,7 +171,8 @@
       const response = await requestVerification(identifier.trim());
       notice = response.message || `Kode verifikasi dikirim ulang ke ${identifier.trim()}.`;
     } catch (error) {
-      errorMessage = error instanceof Error ? error.message : 'Kode verifikasi belum dapat dikirim ulang.';
+      errorMessage =
+        error instanceof Error ? error.message : 'Kode verifikasi belum dapat dikirim ulang.';
     } finally {
       busy = false;
     }

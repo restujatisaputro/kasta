@@ -83,17 +83,25 @@
       </div>
 
       <div class="relative mx-auto w-full max-w-xl">
-        <div class="relative h-64 overflow-hidden rounded-[2rem] border border-white/70 bg-kasta-950 shadow-2xl sm:h-72">
+        <div
+          class="relative h-64 overflow-hidden rounded-[2rem] border border-white/70 bg-kasta-950 shadow-2xl sm:h-72"
+        >
           <img
             src="/images/umkm-hero.png"
             alt="Pelaku UMKM sedang melayani pelanggan di tokonya"
             class="h-full w-full object-cover object-[65%_center]"
             fetchpriority="high"
           />
-          <div class="absolute inset-0 bg-gradient-to-r from-kasta-950/80 via-kasta-950/25 to-transparent"></div>
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-kasta-950/80 via-kasta-950/25 to-transparent"
+          ></div>
           <div class="absolute bottom-5 left-5 max-w-[15rem] text-white sm:left-7">
-            <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-kasta-200">Cerita usaha</p>
-            <p class="mt-1 text-xl font-black leading-tight">Lebih siap melayani, lebih tenang mengelola.</p>
+            <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-kasta-200">
+              Cerita usaha
+            </p>
+            <p class="mt-1 text-xl font-black leading-tight">
+              Lebih siap melayani, lebih tenang mengelola.
+            </p>
           </div>
         </div>
         <div class="kasta-card relative -mt-12 overflow-hidden p-4 sm:-mt-16 sm:ml-8 sm:p-6">
@@ -122,42 +130,47 @@
             </div>
           </div>
           {#if demoView === 'summary'}
-          <div class="mt-5 grid grid-cols-2 gap-3">
-            <div class="rounded-2xl bg-kasta-50 p-4">
-              <p class="text-xs font-bold text-kasta-700">Uang Masuk</p>
-              <p class="mt-1 text-xl font-black text-kasta-950">Rp15,2 jt</p>
-              <small class="text-kasta-700">↑ 12% dari lalu</small>
+            <div class="mt-5 grid grid-cols-2 gap-3">
+              <div class="rounded-2xl bg-kasta-50 p-4">
+                <p class="text-xs font-bold text-kasta-700">Uang Masuk</p>
+                <p class="mt-1 text-xl font-black text-kasta-950">Rp15,2 jt</p>
+                <small class="text-kasta-700">↑ 12% dari lalu</small>
+              </div>
+              <div class="rounded-2xl bg-amber-50 p-4">
+                <p class="text-xs font-bold text-amber-700">Uang Keluar</p>
+                <p class="mt-1 text-xl font-black text-amber-950">Rp9,8 jt</p>
+                <small class="text-amber-700">64% pemasukan</small>
+              </div>
             </div>
-            <div class="rounded-2xl bg-amber-50 p-4">
-              <p class="text-xs font-bold text-amber-700">Uang Keluar</p>
-              <p class="mt-1 text-xl font-black text-amber-950">Rp9,8 jt</p>
-              <small class="text-amber-700">64% pemasukan</small>
+            <div class="mt-3 rounded-2xl bg-slate-950 p-5 text-white">
+              <p class="text-xs font-bold text-slate-300">Perkiraan laba</p>
+              <p class="mt-1 text-3xl font-black">Rp5.400.000</p>
+              <p class="mt-2 text-xs leading-5 text-slate-300">
+                Usaha memperoleh lebih banyak pemasukan dibanding pengeluaran bulan ini.
+              </p>
             </div>
-          </div>
-          <div class="mt-3 rounded-2xl bg-slate-950 p-5 text-white">
-            <p class="text-xs font-bold text-slate-300">Perkiraan laba</p>
-            <p class="mt-1 text-3xl font-black">Rp5.400.000</p>
-            <p class="mt-2 text-xs leading-5 text-slate-300">
-              Usaha memperoleh lebih banyak pemasukan dibanding pengeluaran bulan ini.
-            </p>
-          </div>
-          <div class="mt-4 grid grid-cols-3 gap-2 text-center">
-            <div class="rounded-xl border border-[var(--border)] p-3">
-              <Icon name="income" /><span class="mt-1 block text-[11px] font-bold">Uang Masuk</span>
+            <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+              <div class="rounded-xl border border-[var(--border)] p-3">
+                <Icon name="income" /><span class="mt-1 block text-[11px] font-bold"
+                  >Uang Masuk</span
+                >
+              </div>
+              <div class="rounded-xl border border-[var(--border)] p-3">
+                <Icon name="expense" /><span class="mt-1 block text-[11px] font-bold"
+                  >Uang Keluar</span
+                >
+              </div>
+              <div class="rounded-xl border border-[var(--border)] p-3">
+                <Icon name="camera" /><span class="mt-1 block text-[11px] font-bold">Foto Nota</span
+                >
+              </div>
             </div>
-            <div class="rounded-xl border border-[var(--border)] p-3">
-              <Icon name="expense" /><span class="mt-1 block text-[11px] font-bold"
-                >Uang Keluar</span
-              >
-            </div>
-            <div class="rounded-xl border border-[var(--border)] p-3">
-              <Icon name="camera" /><span class="mt-1 block text-[11px] font-bold">Foto Nota</span>
-            </div>
-          </div>
           {:else}
             <div class="mt-5 grid gap-2">
               {#each [['Penjualan warung', 'Rp420.000', 'Uang masuk'], ['Belanja bahan baku', 'Rp185.000', 'Uang keluar'], ['Cicilan pemasok', 'Rp300.000', 'Utang dibayar']] as activity (activity[0])}
-                <div class="flex items-center justify-between rounded-2xl border border-[var(--border)] px-4 py-3">
+                <div
+                  class="flex items-center justify-between rounded-2xl border border-[var(--border)] px-4 py-3"
+                >
                   <div>
                     <p class="text-sm font-black">{activity[0]}</p>
                     <p class="mt-0.5 text-xs text-[var(--text-muted)]">{activity[2]}</p>
@@ -166,8 +179,11 @@
                 </div>
               {/each}
             </div>
-            <p class="mt-4 rounded-2xl bg-[#fff4e5] px-4 py-3 text-xs font-bold leading-5 text-[#8c4a2f]">
-              Semua aktivitas tersusun rapi, jadi Anda bisa mengambil keputusan dengan lebih percaya diri.
+            <p
+              class="mt-4 rounded-2xl bg-[#fff4e5] px-4 py-3 text-xs font-bold leading-5 text-[#8c4a2f]"
+            >
+              Semua aktivitas tersusun rapi, jadi Anda bisa mengambil keputusan dengan lebih percaya
+              diri.
             </p>
           {/if}
         </div>

@@ -74,29 +74,31 @@
           <span class="text-base" aria-hidden="true">{menuOpen ? '×' : '☰'}</span> Menu
         </button>
         {#if menuOpen}
-        <nav
-          id="mobile-marketing-nav"
-          class="absolute right-0 mt-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-2xl"
-          aria-label="Navigasi seluler"
-        >
-          {#each nav as item (item.href)}
+          <nav
+            id="mobile-marketing-nav"
+            class="absolute right-0 mt-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-2xl"
+            aria-label="Navigasi seluler"
+          >
+            {#each nav as item (item.href)}
+              <a
+                aria-current={active(item.href) ? 'page' : undefined}
+                class="block rounded-xl px-3 py-3 font-bold hover:bg-[var(--surface-muted)]"
+                onclick={() => (menuOpen = false)}
+                href={item.href}>{item.label}</a
+              >
+            {/each}
+            <div class="my-2 border-t border-[var(--border)]"></div>
             <a
-              aria-current={active(item.href) ? 'page' : undefined}
-              class="block rounded-xl px-3 py-3 font-bold hover:bg-[var(--surface-muted)]"
+              class="block rounded-xl px-3 py-3 font-bold"
               onclick={() => (menuOpen = false)}
-              href={item.href}>{item.label}</a
+              href="/login">Masuk</a
             >
-          {/each}
-          <div class="my-2 border-t border-[var(--border)]"></div>
-          <a class="block rounded-xl px-3 py-3 font-bold" onclick={() => (menuOpen = false)} href="/login"
-            >Masuk</a
-          >
-          <a
-            class="block rounded-xl bg-kasta-700 px-3 py-3 text-center font-bold text-white"
-            onclick={() => (menuOpen = false)}
-            href="/registrasi">Daftar gratis</a
-          >
-        </nav>
+            <a
+              class="block rounded-xl bg-kasta-700 px-3 py-3 text-center font-bold text-white"
+              onclick={() => (menuOpen = false)}
+              href="/registrasi">Daftar gratis</a
+            >
+          </nav>
         {/if}
       </div>
     </div>
@@ -108,7 +110,9 @@
     <div class="mx-auto grid max-w-7xl gap-8 px-5 py-12 sm:px-6 md:grid-cols-[1.2fr_.8fr_.8fr]">
       <div>
         <div class="flex items-center gap-2">
-          <span class="relative grid h-10 w-14 place-items-center overflow-hidden rounded-lg border border-[#eadfc8] bg-[#fff8e7]">
+          <span
+            class="relative grid h-10 w-14 place-items-center overflow-hidden rounded-lg border border-[#eadfc8] bg-[#fff8e7]"
+          >
             <img
               src="/images/kasta-logo.png"
               alt=""

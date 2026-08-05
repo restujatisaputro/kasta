@@ -53,7 +53,9 @@
     class="fixed inset-y-0 left-0 z-30 hidden w-68 border-r border-[var(--border)] bg-[var(--surface)] lg:flex lg:flex-col"
   >
     <a href="/" class="flex h-18 items-center gap-3 border-b border-[var(--border)] px-5">
-      <span class="relative grid h-10 w-14 place-items-center overflow-hidden rounded-xl border border-[#eadfc8] bg-[#fff8e7]">
+      <span
+        class="relative grid h-10 w-14 place-items-center overflow-hidden rounded-xl border border-[#eadfc8] bg-[#fff8e7]"
+      >
         <img
           src="/images/kasta-logo.png"
           alt=""
