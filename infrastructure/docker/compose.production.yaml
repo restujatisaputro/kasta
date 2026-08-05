@@ -49,6 +49,22 @@ x-api-environment: &api-environment
   KASTA_FINANCIAL_RETENTION_DAYS: ${KASTA_FINANCIAL_RETENTION_DAYS:-1825}
   KASTA_AUDIT_RETENTION_DAYS: ${KASTA_AUDIT_RETENTION_DAYS:-2555}
   KASTA_SECURITY_DATA_RETENTION_DAYS: ${KASTA_SECURITY_DATA_RETENTION_DAYS:-90}
+  KASTA_MAIL_ENABLED: ${KASTA_MAIL_ENABLED:-false}
+  KASTA_SMTP_HOST: ${KASTA_SMTP_HOST:-smtp.mx.cloudflare.net}
+  KASTA_SMTP_PORT: ${KASTA_SMTP_PORT:-465}
+  KASTA_SMTP_USERNAME: ${KASTA_SMTP_USERNAME:-}
+  KASTA_SMTP_PASSWORD: ${KASTA_SMTP_PASSWORD:-}
+  KASTA_SMTP_SSL: ${KASTA_SMTP_SSL:-true}
+  KASTA_SMTP_STARTTLS: ${KASTA_SMTP_STARTTLS:-false}
+  KASTA_MAIL_FROM: ${KASTA_MAIL_FROM:-KASTA <noreply@admniaga.com>}
+  KASTA_MAIL_OUTBOX_POLL_SECONDS: ${KASTA_MAIL_OUTBOX_POLL_SECONDS:-2}
+  KASTA_WHATSAPP_ENABLED: ${KASTA_WHATSAPP_ENABLED:-false}
+  KASTA_WHATSAPP_API_BASE_URL: ${KASTA_WHATSAPP_API_BASE_URL:-https://graph.facebook.com}
+  KASTA_WHATSAPP_GRAPH_API_VERSION: ${KASTA_WHATSAPP_GRAPH_API_VERSION:-v23.0}
+  KASTA_WHATSAPP_PHONE_NUMBER_ID: ${KASTA_WHATSAPP_PHONE_NUMBER_ID:-}
+  KASTA_WHATSAPP_ACCESS_TOKEN: ${KASTA_WHATSAPP_ACCESS_TOKEN:-}
+  KASTA_WHATSAPP_TEMPLATE_NAME: ${KASTA_WHATSAPP_TEMPLATE_NAME:-kasta_verification}
+  KASTA_WHATSAPP_TEMPLATE_LANGUAGE: ${KASTA_WHATSAPP_TEMPLATE_LANGUAGE:-id}
 
 services:
   postgres:
@@ -109,19 +125,19 @@ services:
       KASTA_OBJECT_BUCKET_BUSINESS_LOGOS: ${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS:-kasta-business-logos}
     volumes:
       - ./minio-kasta-policy.json:/policy/kasta.json:ro
-    entrypoint: [/bin/sh, -c]
-    command: >-
-      mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
-      mc mb --ignore-existing "local/$${KASTA_OBJECT_BUCKET_RECEIPTS}" &&
-      mc mb --ignore-existing "local/$${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS}" &&
-      mc anonymous set none "local/$${KASTA_OBJECT_BUCKET_RECEIPTS}" &&
-      mc anonymous set none "local/$${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS}" &&
-      sed -e "s/kasta-receipts/$${KASTA_OBJECT_BUCKET_RECEIPTS}/g"
-      -e "s/kasta-business-logos/$${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS}/g"
-      /policy/kasta.json > /tmp/kasta-policy.json &&
-      (mc admin user add local "$${KASTA_OBJECT_ACCESS_KEY}" "$${KASTA_OBJECT_SECRET_KEY}" || true) &&
-      (mc admin policy create local kasta-app /tmp/kasta-policy.json || true) &&
-      mc admin policy attach local kasta-app --user "$${KASTA_OBJECT_ACCESS_KEY}"
+    entrypoint: []
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+        mc mb --ignore-existing "local/$${KASTA_OBJECT_BUCKET_RECEIPTS}" &&
+        mc mb --ignore-existing "local/$${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS}" &&
+        mc anonymous set none "local/$${KASTA_OBJECT_BUCKET_RECEIPTS}" &&
+        mc anonymous set none "local/$${KASTA_OBJECT_BUCKET_BUSINESS_LOGOS}" &&
+        (mc admin user add local "$${KASTA_OBJECT_ACCESS_KEY}" "$${KASTA_OBJECT_SECRET_KEY}" || true) &&
+        (mc admin policy create local kasta-app /policy/kasta.json || true) &&
+        mc admin policy attach local kasta-app --user "$${KASTA_OBJECT_ACCESS_KEY}"
     logging: *default-logging
     networks: [backend]
 
@@ -145,7 +161,7 @@ services:
     environment:
       KASTA_ENVIRONMENT: staging
       KASTA_DATABASE_URL: ${KASTA_MIGRATION_DATABASE_URL:?KASTA_MIGRATION_DATABASE_URL is required}
-    command: [alembic, -c, /opt/kasta/alembic.ini, upgrade, head]
+    command: [python, -m, alembic, -c, /opt/kasta/alembic.ini, upgrade, head]
     depends_on:
       postgres:
         condition: service_healthy
@@ -163,10 +179,13 @@ services:
       KASTA_DB_APP_PASSWORD: ${KASTA_DB_APP_PASSWORD:?KASTA_DB_APP_PASSWORD is required}
     volumes:
       - ../../scripts/postgres/configure-runtime-role.sql:/scripts/configure-runtime-role.sql:ro
-    entrypoint: [/bin/sh, -c]
-    command: >-
-      PGPASSWORD="$${POSTGRES_PASSWORD}" psql -h postgres -U "$${POSTGRES_USER}"
-      -d "$${POSTGRES_DB}" -v ON_ERROR_STOP=1 -f /scripts/configure-runtime-role.sql
+    entrypoint: []
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        PGPASSWORD="$${POSTGRES_PASSWORD}" psql -h postgres -U "$${POSTGRES_USER}"
+        -d "$${POSTGRES_DB}" -v ON_ERROR_STOP=1 -f /scripts/configure-runtime-role.sql
     depends_on:
       migrate:
         condition: service_completed_successfully
