@@ -36,6 +36,19 @@ export interface TokenPair {
   expires_in: number;
 }
 
+export interface BusinessAccess {
+  business_id: string;
+  code: string;
+  name: string;
+  role: string;
+}
+
+export interface AccessToken {
+  access_token: string;
+  token_type: 'bearer';
+  expires_in: number;
+}
+
 export interface BusinessProfile {
   business_id: string;
   name: string;
