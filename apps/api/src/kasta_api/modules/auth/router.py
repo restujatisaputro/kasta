@@ -9,10 +9,14 @@ from kasta_api.modules.auth.constants import PermissionCode
 from kasta_api.modules.auth.dependencies import (
     AuthServiceDependency,
     CurrentPrincipal,
+    SelectionPrincipal,
+    require_business_selection,
     require_permission,
 )
 from kasta_api.modules.auth.schemas import (
+    AccessTokenResponse,
     AuthorizationResponse,
+    BusinessAccessResponse,
     ForgotPasswordRequest,
     LoginRequest,
     MessageResponse,
@@ -51,6 +55,25 @@ async def refresh(
         ip_address=_request_ip(request),
         user_agent=request.headers.get("user-agent"),
     )
+
+
+BusinessSelection = Annotated[SelectionPrincipal, Depends(require_business_selection())]
+
+
+@router.get("/auth/businesses", response_model=list[BusinessAccessResponse])
+async def list_auth_businesses(
+    principal: BusinessSelection, service: AuthServiceDependency
+) -> list[BusinessAccessResponse]:
+    return await service.accessible_businesses(principal.user_id)
+
+
+@router.post("/auth/businesses/{business_id}/select", response_model=AccessTokenResponse)
+async def select_auth_business(
+    business_id: UUID,
+    principal: BusinessSelection,
+    service: AuthServiceDependency,
+) -> AccessTokenResponse:
+    return await service.select_business(principal.user_id, principal.session_id, business_id)
 
 
 @router.post(

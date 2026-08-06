@@ -64,8 +64,8 @@ class DeviceSession(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     user_id: Mapped[UUID] = mapped_column(
         Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    business_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False, index=True
+    business_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("businesses.id", ondelete="CASCADE"), nullable=True, index=True
     )
     token_family_id: Mapped[UUID] = mapped_column(Uuid, default=uuid4, nullable=False, index=True)
     refresh_token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
@@ -111,7 +111,7 @@ class AuthOneTimeToken(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 class AuthDeliveryOutbox(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "auth_delivery_outbox"
     __table_args__ = (
-        CheckConstraint("channel IN ('EMAIL', 'SMS')", name="auth_outbox_channel"),
+        CheckConstraint("channel IN ('EMAIL', 'WHATSAPP')", name="auth_outbox_channel"),
         Index("ix_auth_delivery_outbox_pending", "sent_at", "created_at"),
     )
 

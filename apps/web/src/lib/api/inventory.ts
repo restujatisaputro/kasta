@@ -9,9 +9,7 @@ import type {
   StockMovementInput,
 } from '@kasta/contracts';
 
-import { publicConfig } from '$lib/config/public';
-
-import { ApiError, apiRequest, bearerHeaders } from './client';
+import { ApiError, apiFetch, apiRequest, bearerHeaders } from './client';
 
 function inventoryPath(businessId: string, suffix: string): string {
   return `/businesses/${businessId}/inventory${suffix}`;
@@ -123,10 +121,9 @@ export function importProductsCsv(
 }
 
 export async function exportProductsExcel(businessId: string, token: string): Promise<void> {
-  const response = await fetch(
-    `${publicConfig.apiBaseUrl}${inventoryPath(businessId, '/products/export.xlsx')}`,
-    { headers: bearerHeaders(token), credentials: 'include' },
-  );
+  const response = await apiFetch(inventoryPath(businessId, '/products/export.xlsx'), {
+    headers: bearerHeaders(token),
+  });
   if (!response.ok) {
     throw new ApiError('Data produk belum dapat diunduh.', response.status);
   }

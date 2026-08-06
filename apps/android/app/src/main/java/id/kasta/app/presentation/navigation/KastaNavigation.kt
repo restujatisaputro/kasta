@@ -39,6 +39,7 @@ import id.kasta.app.obligations.ObligationViewModel
 import id.kasta.app.onboarding.OnboardingScreen
 import id.kasta.app.onboarding.OnboardingViewModel
 import id.kasta.app.presentation.auth.AuthViewModel
+import id.kasta.app.presentation.auth.BusinessSelectionScreen
 import id.kasta.app.presentation.auth.LoginScreen
 import id.kasta.app.presentation.auth.RegistrationScreen
 import id.kasta.app.presentation.auth.SplashScreen
@@ -61,6 +62,7 @@ import id.kasta.app.transactions.TransactionViewModel
 object KastaRoute {
     val Splash = "splash"
     val Login = "login"
+    val BusinessSelection = "business-selection"
     val Registration = "registration"
     val Onboarding = "onboarding"
     val Main = "main"
@@ -143,7 +145,13 @@ fun KastaNavigation(
                 composable(KastaRoute.Splash) {
                     val auth: AuthViewModel = hiltViewModel()
                     SplashScreen {
-                        navController.navigate(if (auth.hasSession()) KastaRoute.Home else KastaRoute.Login) {
+                        navController.navigate(
+                            when {
+                                auth.hasSession() -> KastaRoute.Home
+                                auth.hasPendingBusinessSelection() -> KastaRoute.BusinessSelection
+                                else -> KastaRoute.Login
+                            },
+                        ) {
                             popUpTo(KastaRoute.Splash) { inclusive = true }
                         }
                     }
@@ -153,7 +161,7 @@ fun KastaNavigation(
                     val state by auth.state.collectAsState()
                     LaunchedEffect(state.authenticated) {
                         if (state.authenticated) {
-                            navController.navigate(KastaRoute.Home) { popUpTo(KastaRoute.Login) { inclusive = true } }
+                            navController.navigate(KastaRoute.BusinessSelection) { popUpTo(KastaRoute.Login) { inclusive = true } }
                         }
                     }
                     LoginScreen(
@@ -162,6 +170,19 @@ fun KastaNavigation(
                         onLogin = auth::login,
                         onRegister = { navController.navigate(KastaRoute.Registration) },
                     )
+                }
+                composable(KastaRoute.BusinessSelection) {
+                    val auth: AuthViewModel = hiltViewModel()
+                    val state by auth.state.collectAsState()
+                    LaunchedEffect(Unit) { auth.loadBusinesses() }
+                    LaunchedEffect(state.businessSelected) {
+                        if (state.businessSelected) {
+                            navController.navigate(KastaRoute.Home) {
+                                popUpTo(KastaRoute.BusinessSelection) { inclusive = true }
+                            }
+                        }
+                    }
+                    BusinessSelectionScreen(state = state, onSelect = auth::selectBusiness)
                 }
                 composable(KastaRoute.Registration) {
                     RegistrationScreen(

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from '$app/state';
   import type { Snippet } from 'svelte';
   import Button from './Button.svelte';
   import DarkModeToggle from './DarkModeToggle.svelte';
@@ -8,12 +9,17 @@
   }
 
   let { children }: Props = $props();
+  let menuOpen = $state(false);
 
   const nav = [
     { href: '/tentang', label: 'Tentang' },
     { href: '/fitur', label: 'Fitur' },
     { href: '/bantuan', label: 'Bantuan' },
   ];
+
+  function active(href: string): boolean {
+    return page.url.pathname === href || page.url.pathname === `${href}/`;
+  }
 </script>
 
 <div class="min-h-screen bg-[var(--surface-subtle)] text-[var(--text)]">
@@ -21,11 +27,16 @@
     class="sticky top-0 z-40 border-b border-[var(--border)] bg-[color:var(--surface)]/95 backdrop-blur"
   >
     <div class="mx-auto flex h-18 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-      <a href="/" class="flex items-center gap-2" aria-label="KASTA, kembali ke beranda">
+      <a href="/" class="group flex items-center gap-2" aria-label="KASTA, kembali ke beranda">
         <span
-          class="grid h-10 w-10 place-items-center rounded-xl bg-kasta-700 text-lg font-black text-white"
-          >K</span
+          class="relative grid h-12 w-16 place-items-center overflow-hidden rounded-xl border border-[#eadfc8] bg-[#fff8e7] shadow-sm transition group-hover:-rotate-2 group-hover:shadow-md"
         >
+          <img
+            src="/images/kasta-logo.png"
+            alt=""
+            class="absolute left-1/2 top-1/2 w-[300%] max-w-none -translate-x-1/2 -translate-y-1/2"
+          />
+        </span>
         <span
           ><strong class="block text-lg leading-5 text-kasta-950 dark:text-kasta-100">KASTA</strong
           ><small class="hidden text-[11px] text-[var(--text-muted)] sm:block"
@@ -37,7 +48,10 @@
       <nav class="hidden items-center gap-1 md:flex" aria-label="Navigasi utama">
         {#each nav as item (item.href)}
           <a
-            class="rounded-xl px-4 py-2.5 text-sm font-bold text-[var(--text-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
+            aria-current={active(item.href) ? 'page' : undefined}
+            class="rounded-xl px-4 py-2.5 text-sm font-bold transition {active(item.href)
+              ? 'bg-kasta-50 text-kasta-800 dark:bg-kasta-950 dark:text-kasta-200'
+              : 'text-[var(--text-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]'}"
             href={item.href}>{item.label}</a
           >
         {/each}
@@ -49,29 +63,44 @@
         <Button href="/registrasi">Daftar gratis</Button>
       </div>
 
-      <details class="relative md:hidden">
-        <summary
-          class="flex min-h-11 cursor-pointer list-none items-center rounded-xl border border-[var(--border)] px-3 text-sm font-extrabold"
-          >Menu</summary
+      <div class="relative md:hidden">
+        <button
+          type="button"
+          class="flex min-h-11 items-center gap-2 rounded-xl border border-[var(--border)] px-3 text-sm font-extrabold transition hover:bg-[var(--surface-muted)]"
+          aria-expanded={menuOpen}
+          aria-controls="mobile-marketing-nav"
+          onclick={() => (menuOpen = !menuOpen)}
         >
-        <nav
-          class="absolute right-0 mt-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-2xl"
-          aria-label="Navigasi seluler"
-        >
-          {#each nav as item (item.href)}
-            <a
-              class="block rounded-xl px-3 py-3 font-bold hover:bg-[var(--surface-muted)]"
-              href={item.href}>{item.label}</a
-            >
-          {/each}
-          <div class="my-2 border-t border-[var(--border)]"></div>
-          <a class="block rounded-xl px-3 py-3 font-bold" href="/login">Masuk</a>
-          <a
-            class="block rounded-xl bg-kasta-700 px-3 py-3 text-center font-bold text-white"
-            href="/registrasi">Daftar gratis</a
+          <span class="text-base" aria-hidden="true">{menuOpen ? '×' : '☰'}</span> Menu
+        </button>
+        {#if menuOpen}
+          <nav
+            id="mobile-marketing-nav"
+            class="absolute right-0 mt-2 w-64 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-2xl"
+            aria-label="Navigasi seluler"
           >
-        </nav>
-      </details>
+            {#each nav as item (item.href)}
+              <a
+                aria-current={active(item.href) ? 'page' : undefined}
+                class="block rounded-xl px-3 py-3 font-bold hover:bg-[var(--surface-muted)]"
+                onclick={() => (menuOpen = false)}
+                href={item.href}>{item.label}</a
+              >
+            {/each}
+            <div class="my-2 border-t border-[var(--border)]"></div>
+            <a
+              class="block rounded-xl px-3 py-3 font-bold"
+              onclick={() => (menuOpen = false)}
+              href="/login">Masuk</a
+            >
+            <a
+              class="block rounded-xl bg-kasta-700 px-3 py-3 text-center font-bold text-white"
+              onclick={() => (menuOpen = false)}
+              href="/registrasi">Daftar gratis</a
+            >
+          </nav>
+        {/if}
+      </div>
     </div>
   </header>
 
@@ -80,7 +109,18 @@
   <footer class="border-t border-[var(--border)] bg-[var(--surface)]">
     <div class="mx-auto grid max-w-7xl gap-8 px-5 py-12 sm:px-6 md:grid-cols-[1.2fr_.8fr_.8fr]">
       <div>
-        <strong class="text-xl text-kasta-900 dark:text-kasta-100">KASTA</strong>
+        <div class="flex items-center gap-2">
+          <span
+            class="relative grid h-10 w-14 place-items-center overflow-hidden rounded-lg border border-[#eadfc8] bg-[#fff8e7]"
+          >
+            <img
+              src="/images/kasta-logo.png"
+              alt=""
+              class="absolute left-1/2 top-1/2 w-[300%] max-w-none -translate-x-1/2 -translate-y-1/2"
+            />
+          </span>
+          <strong class="text-xl text-kasta-900 dark:text-kasta-100">KASTA</strong>
+        </div>
         <p class="mt-3 max-w-sm text-sm leading-6 text-[var(--text-muted)]">
           Pencatatan keuangan yang mudah dipahami pelaku UMKM dan tetap rapi di belakang layar.
         </p>

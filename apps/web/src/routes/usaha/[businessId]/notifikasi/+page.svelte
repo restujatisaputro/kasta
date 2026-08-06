@@ -113,7 +113,8 @@
                   <span class="flex items-center justify-between gap-3">
                     <strong>{item.title}</strong>
                     {#if !item.read_at}
-                      <span class="rounded-full bg-kasta-700 px-2 py-1 text-[10px] font-black text-white"
+                      <span
+                        class="rounded-full bg-kasta-700 px-2 py-1 text-[10px] font-black text-white"
                         >BARU</span
                       >
                     {/if}

@@ -14,7 +14,13 @@ from kasta_api.modules.auth.models import (
     LoginRateLimit,
 )
 from kasta_api.modules.auth.repository import AuthorizationRecord, AuthRepository
-from kasta_api.modules.auth.schemas import LoginRequest, RegistrationRequest, TokenPairResponse
+from kasta_api.modules.auth.schemas import (
+    AccessTokenResponse,
+    BusinessAccessResponse,
+    LoginRequest,
+    RegistrationRequest,
+    TokenPairResponse,
+)
 from kasta_api.modules.auth.security import (
     OutboxCipher,
     PasswordManager,
@@ -82,7 +88,7 @@ class AuthService:
             user_id=user.id,
             purpose=f"VERIFY_{kind}",
             target=identifier,
-            channel=kind,
+            channel="WHATSAPP" if kind == "PHONE" else kind,
             lifetime=timedelta(minutes=self.settings.verification_token_minutes),
         )
         logger.info(
@@ -159,11 +165,19 @@ class AuthService:
                 detail="Nomor telepon belum diverifikasi.",
             )
 
-        authorization = await self.repository.resolve_authorization(user.id, request.business_id)
-        if authorization is None:
+        if request.business_id is not None:
+            authorization = await self.repository.resolve_authorization(
+                user.id, request.business_id
+            )
+            if authorization is None:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Anda tidak memiliki akses aktif ke usaha ini.",
+                )
+        elif not await self.repository.list_accessible_businesses(user.id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Anda tidak memiliki akses aktif ke usaha ini.",
+                detail="Akun ini belum memiliki usaha aktif.",
             )
 
         await self.repository.clear_rate_limit(rate_key)
@@ -203,6 +217,41 @@ class AuthService:
         )
         return self._token_pair(user.id, request.business_id, device_session.id, refresh_token)
 
+    async def accessible_businesses(self, user_id: UUID) -> list[BusinessAccessResponse]:
+        return [
+            BusinessAccessResponse(
+                business_id=business.id,
+                code=business.code,
+                name=business.name,
+                role=authorization.role_code,
+            )
+            for business, authorization in await self.repository.list_accessible_businesses(user_id)
+        ]
+
+    async def select_business(
+        self, user_id: UUID, session_id: UUID, business_id: UUID
+    ) -> AccessTokenResponse:
+        device_session = await self.repository.get_device_session(session_id, lock=True)
+        if (
+            device_session is None
+            or device_session.user_id != user_id
+            or device_session.revoked_at is not None
+            or device_session.business_id is not None
+        ):
+            raise self._authentication_error("Sesi pemilihan usaha tidak aktif.")
+        authorization = await self.repository.resolve_authorization(user_id, business_id)
+        if authorization is None:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Anda tidak memiliki akses aktif ke usaha ini.",
+            )
+        device_session.business_id = business_id
+        await self.repository.commit()
+        return AccessTokenResponse(
+            access_token=self.token_manager.create_access_token(user_id, session_id, business_id),
+            expires_in=self.token_manager.access_token_seconds,
+        )
+
     async def refresh(
         self, refresh_token: str, *, ip_address: str, user_agent: str | None
     ) -> TokenPairResponse:
@@ -236,14 +285,21 @@ class AuthService:
             )
             raise self._authentication_error(INVALID_TOKEN)
 
-        authorization = await self.repository.resolve_authorization(
-            device_session.user_id, device_session.business_id
-        )
-        if authorization is None:
-            device_session.revoked_at = now
-            device_session.revocation_reason = "ACCESS_REMOVED"
-            await self.repository.commit()
-            raise self._authentication_error(INVALID_TOKEN)
+        if device_session.business_id is None:
+            if not await self.repository.list_accessible_businesses(device_session.user_id):
+                device_session.revoked_at = now
+                device_session.revocation_reason = "ACCESS_REMOVED"
+                await self.repository.commit()
+                raise self._authentication_error(INVALID_TOKEN)
+        else:
+            authorization = await self.repository.resolve_authorization(
+                device_session.user_id, device_session.business_id
+            )
+            if authorization is None:
+                device_session.revoked_at = now
+                device_session.revocation_reason = "ACCESS_REMOVED"
+                await self.repository.commit()
+                raise self._authentication_error(INVALID_TOKEN)
 
         rotated_token, rotated_hash = self.token_manager.create_opaque_token(device_session.id)
         device_session.refresh_token_hash = rotated_hash
@@ -286,7 +342,7 @@ class AuthService:
             user_id=user.id,
             purpose=purpose,
             target=identifier,
-            channel=kind,
+            channel="WHATSAPP" if kind == "PHONE" else kind,
             lifetime=timedelta(minutes=self.settings.verification_token_minutes),
         )
         return GENERIC_VERIFICATION_MESSAGE
@@ -321,7 +377,7 @@ class AuthService:
             user_id=user.id,
             purpose="RESET_PASSWORD",
             target=identifier,
-            channel=kind,
+            channel="WHATSAPP" if kind == "PHONE" else kind,
             lifetime=timedelta(minutes=self.settings.password_reset_token_minutes),
         )
         return GENERIC_RESET_MESSAGE
@@ -498,7 +554,7 @@ class AuthService:
         return self.settings.account_lock_seconds
 
     def _token_pair(
-        self, user_id: UUID, business_id: UUID, session_id: UUID, refresh_token: str
+        self, user_id: UUID, business_id: UUID | None, session_id: UUID, refresh_token: str
     ) -> TokenPairResponse:
         return TokenPairResponse(
             access_token=self.token_manager.create_access_token(user_id, session_id, business_id),

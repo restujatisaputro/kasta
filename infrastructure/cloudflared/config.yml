@@ -1,0 +1,60 @@
+tunnel: home-virtualmin
+credentials-file: /etc/cloudflared/62e31452-d221-475b-a141-361db806d9bc.json
+ingress:
+  - hostname: panel.restujati.uk
+    service: https://127.0.0.1:10000
+    originRequest:
+      noTLSVerify: true
+      httpHostHeader: panel.restujati.uk
+
+  - hostname: tokokj.restujati.uk
+    service: http://localhost:80
+
+  - hostname: restujati.uk
+    service: http://localhost:80
+
+  - hostname: www.restujati.uk
+    service: http://localhost:80
+
+  - hostname: tufile.restujati.uk
+    service: http://localhost:8088
+
+  - hostname: nextcloud.restujati.uk
+    service: http://127.0.0.1:8089
+    originRequest:
+      httpHostHeader: nextcloud.restujati.uk
+
+  - hostname: n8n.restujati.uk
+    service: http://127.0.0.1:5678
+    originRequest:
+      httpHostHeader: n8n.restujati.uk
+
+  - hostname: escore-mice.com
+    service: http://localhost:80
+  - hostname: www.escore-mice.com
+    service: http://localhost:80
+
+  - hostname: eventimpactmetrics.com
+    service: http://localhost:80
+    originRequest:
+      httpHostHeader: eventimpactmetrics.com
+  - hostname: www.eventimpactmetrics.com
+    service: http://localhost:80
+    originRequest:
+      httpHostHeader: eventimpactmetrics.com
+
+  - hostname: kasta.admniaga.com
+    service: http://127.0.0.1:8090
+  - hostname: appkasta.admniaga.com
+    service: http://127.0.0.1:8090
+  - hostname: apikasta.admniaga.com
+    service: http://127.0.0.1:8090
+
+  - hostname: admniaga.com
+    service: http://localhost:3000
+  - hostname: www.admniaga.com
+    service: http://localhost:3000
+  - hostname: bfest.admniaga.com
+    service: http://localhost:80
+
+  - service: http_status:404

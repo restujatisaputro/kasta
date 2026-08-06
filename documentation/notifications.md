@@ -45,15 +45,15 @@ akhir jam tenang; Android juga menahan pengingat lokal selama rentang tersebut.
 
 Semua endpoint berada di `/api/v1/businesses/{business_id}/notifications`.
 
-| Metode | Path | Fungsi |
-| --- | --- | --- |
-| GET | `/` | Daftar inbox penerima aktif |
-| GET | `/unread-count` | Jumlah belum dibaca |
-| POST | `/{notification_id}/read` | Tandai satu item dibaca |
-| POST | `/read-all` | Tandai semua dibaca |
-| GET/PUT | `/preferences` | Baca atau ubah kategori, waktu, quiet hours, dan kanal |
-| PUT | `/push-subscription` | Daftarkan token perangkat untuk provider push |
-| POST | `/evaluate?as_of=YYYY-MM-DD` | Evaluasi reminder idempoten milik pengguna aktif |
+| Metode  | Path                         | Fungsi                                                 |
+| ------- | ---------------------------- | ------------------------------------------------------ |
+| GET     | `/`                          | Daftar inbox penerima aktif                            |
+| GET     | `/unread-count`              | Jumlah belum dibaca                                    |
+| POST    | `/{notification_id}/read`    | Tandai satu item dibaca                                |
+| POST    | `/read-all`                  | Tandai semua dibaca                                    |
+| GET/PUT | `/preferences`               | Baca atau ubah kategori, waktu, quiet hours, dan kanal |
+| PUT     | `/push-subscription`         | Daftarkan token perangkat untuk provider push          |
+| POST    | `/evaluate?as_of=YYYY-MM-DD` | Evaluasi reminder idempoten milik pengguna aktif       |
 
 FCM bersifat opsional. Token perangkat dapat diregistrasikan, tetapi kredensial Firebase dan
 `google-services.json` tidak disimpan dalam repository. Saat kanal FCM diaktifkan pada suatu

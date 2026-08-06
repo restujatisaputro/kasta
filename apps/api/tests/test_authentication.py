@@ -58,6 +58,47 @@ async def test_phone_login_accepts_indonesian_local_format(
     assert tokens.token_type == "bearer"
 
 
+async def test_login_without_business_id_lists_and_selects_business(
+    auth_environment: AuthTestEnvironment,
+) -> None:
+    response = await auth_environment.client.post(
+        "/api/v1/auth/login",
+        json={
+            "identifier": "owner@example.com",
+            "password": auth_environment.password,
+            "device_id": "business-selection-device",
+            "platform": "WEB",
+        },
+    )
+    assert response.status_code == 200, response.text
+    tokens = TokenPairResponse.model_validate(response.json())
+
+    businesses = await auth_environment.client.get(
+        "/api/v1/auth/businesses",
+        headers={"Authorization": f"Bearer {tokens.access_token}"},
+    )
+    assert businesses.status_code == 200
+    assert businesses.json()[0]["business_id"] == str(auth_environment.business_a_id)
+
+    selected = await auth_environment.client.post(
+        f"/api/v1/auth/businesses/{auth_environment.business_a_id}/select",
+        headers={"Authorization": f"Bearer {tokens.access_token}"},
+    )
+    assert selected.status_code == 200
+    selected_access_token = selected.json()["access_token"]
+
+    selection_session_is_closed = await auth_environment.client.get(
+        "/api/v1/auth/businesses",
+        headers={"Authorization": f"Bearer {tokens.access_token}"},
+    )
+    assert selection_session_is_closed.status_code == 401
+    protected = await auth_environment.client.get(
+        f"/api/v1/businesses/{auth_environment.business_a_id}/auth/authorization",
+        headers={"Authorization": f"Bearer {selected_access_token}"},
+    )
+    assert protected.status_code == 200
+
+
 async def test_email_verification_then_login(auth_environment: AuthTestEnvironment) -> None:
     before = await auth_environment.client.post(
         "/api/v1/auth/login",

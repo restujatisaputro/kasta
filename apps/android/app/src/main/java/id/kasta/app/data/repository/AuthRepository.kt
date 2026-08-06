@@ -16,17 +16,15 @@ class AuthRepository
         private val sessionStore: SessionStore,
         private val syncPreferences: SyncPreferences,
     ) {
-        fun hasSession(): Boolean = sessionStore.get() != null
+        fun hasSession(): Boolean = sessionStore.get()?.businessId?.isNotBlank() == true
 
         suspend fun login(
-            businessId: String,
             identifier: String,
             password: String,
         ) {
             val response =
                 authApi.login(
                     LoginRequest(
-                        businessId = businessId,
                         identifier = identifier,
                         password = password,
                         deviceId = syncPreferences.deviceId(),
@@ -36,11 +34,24 @@ class AuthRepository
                 )
             sessionStore.save(
                 AppSession(
-                    businessId = businessId,
+                    businessId = "",
                     accessToken = response.accessToken,
                     refreshToken = response.refreshToken,
                 ),
             )
+        }
+
+        fun hasPendingBusinessSelection(): Boolean = sessionStore.get()?.businessId?.isBlank() == true
+
+        suspend fun businesses() =
+            sessionStore.get()?.let { session ->
+                authApi.businesses("Bearer ${session.accessToken}")
+            } ?: emptyList()
+
+        suspend fun selectBusiness(businessId: String) {
+            val session = sessionStore.get() ?: error("Sesi tidak ditemukan.")
+            val response = authApi.selectBusiness(businessId, "Bearer ${session.accessToken}")
+            sessionStore.save(session.copy(businessId = businessId, accessToken = response.accessToken))
         }
 
         fun logout() = sessionStore.clear()

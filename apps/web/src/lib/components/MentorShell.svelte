@@ -33,8 +33,13 @@
     class="fixed inset-y-0 left-0 z-30 hidden w-68 border-r border-[var(--border)] bg-[var(--surface)] lg:flex lg:flex-col"
   >
     <a href="/" class="flex h-18 items-center gap-3 border-b border-[var(--border)] px-5"
-      ><span class="grid h-10 w-10 place-items-center rounded-xl bg-kasta-700 font-black text-white"
-        >K</span
+      ><span
+        class="relative grid h-10 w-14 place-items-center overflow-hidden rounded-xl border border-[#eadfc8] bg-[#fff8e7]"
+        ><img
+          src="/images/kasta-logo.png"
+          alt=""
+          class="absolute left-1/2 top-1/2 w-[300%] max-w-none -translate-x-1/2 -translate-y-1/2"
+        /></span
       ><span
         ><strong class="block">KASTA</strong><small class="text-[11px] text-[var(--text-muted)]"
           >Ruang pembina</small

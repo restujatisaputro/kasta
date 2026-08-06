@@ -1,5 +1,6 @@
 <script lang="ts">
   import { browser } from '$app/environment';
+  import { goto } from '$app/navigation';
   import { z } from 'zod';
   import AuthShell from '$lib/components/AuthShell.svelte';
   import Button from '$lib/components/Button.svelte';
@@ -9,12 +10,10 @@
   import { authSession } from '$lib/stores/auth-session';
 
   const schema = z.object({
-    businessId: z.string().uuid('ID usaha harus berupa UUID yang valid.'),
     identifier: z.string().min(3, 'Masukkan email atau nomor telepon.'),
     password: z.string().min(1, 'Masukkan kata sandi.'),
   });
 
-  let businessId = $state('');
   let identifier = $state('');
   let password = $state('');
   let errors = $state<Record<string, string>>({});
@@ -23,7 +22,7 @@
 
   async function submit(event: SubmitEvent) {
     event.preventDefault();
-    const result = schema.safeParse({ businessId, identifier, password });
+    const result = schema.safeParse({ identifier, password });
     if (!result.success) {
       errors = Object.fromEntries(
         result.error.issues.map((issue) => [String(issue.path[0]), issue.message]),
@@ -39,7 +38,6 @@
         : 'web-browser';
       if (browser) localStorage.setItem('kasta-device-id', deviceId);
       const tokens = await login({
-        business_id: businessId,
         identifier: identifier.trim(),
         password,
         device_id: deviceId,
@@ -50,9 +48,11 @@
       authSession.set({
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
-        businessId,
+        businessId: null,
       });
-      if (browser) window.location.assign(`/usaha/${businessId}`);
+      if (browser) {
+        await goto('/pilih-usaha');
+      }
     } catch (error) {
       message = error instanceof Error ? error.message : 'Belum dapat masuk. Coba lagi.';
     } finally {
@@ -73,14 +73,6 @@
   description="Masuk untuk melanjutkan pencatatan usaha Anda."
 >
   <form class="space-y-5" onsubmit={submit} novalidate>
-    <FormField
-      id="business-id"
-      label="ID usaha"
-      bind:value={businessId}
-      error={errors.businessId}
-      help="ID ini diberikan setelah profil usaha selesai dibuat."
-      required
-    />
     <FormField
       id="identifier"
       label="Email atau nomor telepon"

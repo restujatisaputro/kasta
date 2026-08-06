@@ -22,7 +22,7 @@ class DeviceInfo(BaseModel):
 
 
 class LoginRequest(DeviceInfo):
-    business_id: UUID
+    business_id: UUID | None = None
     identifier: Identifier
     password: Annotated[str, StringConstraints(min_length=1, max_length=128)]
 
@@ -36,6 +36,19 @@ class TokenPairResponse(BaseModel):
     refresh_token: str
     token_type: Literal["bearer"] = "bearer"
     expires_in: int
+
+
+class AccessTokenResponse(BaseModel):
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"
+    expires_in: int
+
+
+class BusinessAccessResponse(BaseModel):
+    business_id: UUID
+    code: str
+    name: str
+    role: str
 
 
 class VerificationRequest(BaseModel):

@@ -15,6 +15,7 @@
     completeOnboarding,
     createAccount,
     getBusinessCategories,
+    requestVerification,
     uploadBusinessLogo,
     verifyAccount,
   } from '$lib/api/onboarding';
@@ -154,6 +155,24 @@
     } catch (error) {
       errorMessage =
         error instanceof Error ? error.message : 'Kode verifikasi tidak dapat digunakan.';
+    } finally {
+      busy = false;
+    }
+  }
+
+  async function resendVerification(): Promise<void> {
+    if (!identifier.trim()) {
+      errorMessage = 'Kembali ke langkah pendaftaran dan masukkan email atau nomor telepon.';
+      return;
+    }
+    busy = true;
+    errorMessage = '';
+    try {
+      const response = await requestVerification(identifier.trim());
+      notice = response.message || `Kode verifikasi dikirim ulang ke ${identifier.trim()}.`;
+    } catch (error) {
+      errorMessage =
+        error instanceof Error ? error.message : 'Kode verifikasi belum dapat dikirim ulang.';
     } finally {
       busy = false;
     }
@@ -332,6 +351,14 @@
             <button class="primary-button mt-8" disabled={busy}
               >{busy ? 'Memeriksa…' : 'Verifikasi akun'}</button
             >
+            <button
+              type="button"
+              class="mt-4 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700"
+              disabled={busy}
+              onclick={() => void resendVerification()}
+            >
+              {busy ? 'Mengirim…' : 'Kirim ulang kode verifikasi'}
+            </button>
           </form>
         {:else if step === 3}
           <p class="eyebrow">Peran Anda</p>

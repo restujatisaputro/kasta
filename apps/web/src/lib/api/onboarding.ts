@@ -4,8 +4,7 @@ import type {
   CompleteOnboardingResponse,
 } from '@kasta/contracts';
 
-import { apiRequest, bearerHeaders } from './client';
-import { publicConfig } from '$lib/config/public';
+import { apiFetch, apiRequest, bearerHeaders } from './client';
 
 export interface RegistrationPayload {
   full_name: string;
@@ -27,6 +26,14 @@ export async function verifyAccount(token: string): Promise<{ onboarding_token: 
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token }),
+  });
+}
+
+export async function requestVerification(identifier: string): Promise<{ message: string }> {
+  return apiRequest('/auth/verification/request', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identifier }),
   });
 }
 
@@ -81,7 +88,7 @@ export async function uploadBusinessLogo(
 }
 
 export async function getBusinessLogo(businessId: string, accessToken: string): Promise<string> {
-  const response = await fetch(`${publicConfig.apiBaseUrl}/businesses/${businessId}/profile/logo`, {
+  const response = await apiFetch(`/businesses/${businessId}/profile/logo`, {
     headers: bearerHeaders(accessToken),
   });
   if (!response.ok) throw new Error('Logo tidak dapat dimuat.');

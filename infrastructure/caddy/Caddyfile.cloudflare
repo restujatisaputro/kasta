@@ -1,0 +1,33 @@
+(kasta-security) {
+	encode zstd gzip
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=()"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		-Server
+	}
+}
+
+http://kasta.admniaga.com {
+	redir https://appkasta.admniaga.com{uri} permanent
+}
+
+http://appkasta.admniaga.com {
+	import kasta-security
+	reverse_proxy web:3000
+}
+
+http://apikasta.admniaga.com {
+	import kasta-security
+
+	@api path /api/* /docs* /redoc* /openapi.json
+	handle @api {
+		reverse_proxy api:8000
+	}
+
+	handle {
+		reverse_proxy minio:9000
+	}
+}

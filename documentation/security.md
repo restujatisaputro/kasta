@@ -33,14 +33,14 @@ backup, dan proses rilis KASTA. Kontrol harus diuji ulang pada setiap rilis.
 
 ## Threat model STRIDE
 
-| Kategori | Ancaman utama | Aset/dampak | Kontrol | Residual risk/tindakan |
-|---|---|---|---|---|
-| Spoofing | Credential stuffing, pencurian refresh token, header proxy palsu | Akun dan session | Argon2id, lockout akun, rate limit, rotasi refresh, session revocation, trusted proxy CIDR | Tambahkan MFA untuk admin dan notifikasi login baru sebelum produksi luas |
-| Tampering | Manipulasi `business_id`, jurnal, nota, audit log, atau backup | Integritas keuangan | Permission dependency, transaksi DB, jurnal seimbang, RLS FORCE, audit append-only, checksum backup | Tanda tangan release dan immutable backup masih dikontrol platform deployment |
-| Repudiation | Pengguna/pembina menyangkal perubahan atau akses | Bukti aktivitas | Audit actor, request ID, revision/reversal, log akses pembina/dukungan | Sinkronisasi jam host dan retensi log wajib dimonitor |
-| Information disclosure | IDOR lintas UMKM, bucket publik, log/token bocor, export salah pengguna | Data pribadi dan finansial | Token-bound tenant, query `(business_id,id)`, RLS, signed URL pendek, bucket privat, redaksi log, export self-only | Screenshot/perangkat pengguna berada di luar kontrol server |
-| Denial of service | Login flood, request flood, upload besar/decompression bomb, OCR mahal | Ketersediaan | Rate limit, batas 8 MB/8192 px, validasi sebelum proses, timeout scanner, resource limit proxy/container | Terapkan WAF/CDN dan quota terdistribusi saat API direplikasi |
-| Elevation of privilege | Role/permission dimanipulasi, admin melewati consent, RLS bypass | Seluruh tenant | Permission granular, support grant terbatas waktu dan diaudit, runtime role least privilege, RLS FORCE | Review grant admin dan role database setiap kuartal |
+| Kategori               | Ancaman utama                                                           | Aset/dampak                | Kontrol                                                                                                            | Residual risk/tindakan                                                        |
+| ---------------------- | ----------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Spoofing               | Credential stuffing, pencurian refresh token, header proxy palsu        | Akun dan session           | Argon2id, lockout akun, rate limit, rotasi refresh, session revocation, trusted proxy CIDR                         | Tambahkan MFA untuk admin dan notifikasi login baru sebelum produksi luas     |
+| Tampering              | Manipulasi `business_id`, jurnal, nota, audit log, atau backup          | Integritas keuangan        | Permission dependency, transaksi DB, jurnal seimbang, RLS FORCE, audit append-only, checksum backup                | Tanda tangan release dan immutable backup masih dikontrol platform deployment |
+| Repudiation            | Pengguna/pembina menyangkal perubahan atau akses                        | Bukti aktivitas            | Audit actor, request ID, revision/reversal, log akses pembina/dukungan                                             | Sinkronisasi jam host dan retensi log wajib dimonitor                         |
+| Information disclosure | IDOR lintas UMKM, bucket publik, log/token bocor, export salah pengguna | Data pribadi dan finansial | Token-bound tenant, query `(business_id,id)`, RLS, signed URL pendek, bucket privat, redaksi log, export self-only | Screenshot/perangkat pengguna berada di luar kontrol server                   |
+| Denial of service      | Login flood, request flood, upload besar/decompression bomb, OCR mahal  | Ketersediaan               | Rate limit, batas 8 MB/8192 px, validasi sebelum proses, timeout scanner, resource limit proxy/container           | Terapkan WAF/CDN dan quota terdistribusi saat API direplikasi                 |
+| Elevation of privilege | Role/permission dimanipulasi, admin melewati consent, RLS bypass        | Seluruh tenant             | Permission granular, support grant terbatas waktu dan diaudit, runtime role least privilege, RLS FORCE             | Review grant admin dan role database setiap kuartal                           |
 
 ## Alur keamanan autentikasi
 

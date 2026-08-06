@@ -11,7 +11,7 @@ from starlette.datastructures import Headers
 
 from kasta_api.core.config import get_settings
 from kasta_api.modules.auth.dependencies import get_password_manager
-from kasta_api.modules.auth.security import TokenManager, utc_now
+from kasta_api.modules.auth.security import TokenManager, normalize_identifier, utc_now
 from kasta_api.modules.receipts.storage import MAX_RECEIPT_BYTES, ReceiptStorage
 from kasta_api.modules.users.models import User
 from tests.conftest import AuthTestEnvironment, login_as
@@ -62,6 +62,13 @@ async def test_argon2id_short_jwt_and_tamper_rejection() -> None:
     assert 0 < (claims.expires_at - utc_now()).total_seconds() <= 15 * 60
     with pytest.raises(ValueError, match="Token akses tidak valid"):
         manager.decode_access_token(f"{token[:-1]}x")
+
+
+async def test_demo_seed_email_domain_can_be_normalized() -> None:
+    assert normalize_identifier(" Demo.Owner01@Example.Test ") == (
+        "EMAIL",
+        "demo.owner01@example.test",
+    )
 
 
 async def test_cookie_only_authentication_and_sql_injection_are_rejected(

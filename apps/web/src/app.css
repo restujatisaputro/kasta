@@ -116,6 +116,14 @@ a {
     box-shadow: var(--shadow-card);
   }
 
+  .kasta-gradient {
+    background: linear-gradient(135deg, #0f422d 0%, #146441 54%, #6d9d7d 100%);
+  }
+
+  .kasta-gradient-warm {
+    background: linear-gradient(135deg, #fff8e7 0%, #f1faef 54%, #ffe2c6 100%);
+  }
+
   .kasta-field {
     min-height: 2.875rem;
     width: 100%;

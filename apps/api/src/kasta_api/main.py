@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -16,14 +17,24 @@ from kasta_api.core.logging import configure_logging
 from kasta_api.core.middleware import ErrorHandlingMiddleware, RequestContextMiddleware
 from kasta_api.core.security import RateLimitMiddleware, SecurityHeadersMiddleware
 from kasta_api.db.session import dispose_engine
+from kasta_api.modules.auth.delivery import run_delivery_worker
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    settings = get_settings()
+    delivery_task = None
+    if settings.mail_enabled or settings.whatsapp_enabled:
+        delivery_task = asyncio.create_task(run_delivery_worker(settings))
     logger.info("KASTA API started")
-    yield
+    try:
+        yield
+    finally:
+        if delivery_task is not None:
+            delivery_task.cancel()
+            await asyncio.gather(delivery_task, return_exceptions=True)
     await dispose_engine()
     logger.info("KASTA API stopped")
 
