@@ -8,5 +8,19 @@ allowBuilds:
   esbuild: true
   protobufjs: false
 
+minimumReleaseAgeExclude:
+  - js-yaml@4.3.0
+  - '@opentelemetry/propagator-jaeger@2.9.0'
+  - brace-expansion@1.1.18 || 2.1.4 || 5.0.9
+
 onlyBuiltDependencies:
   - esbuild
+
+# Menutup advisory severity high pada dependensi transitif; audit CI gagal pada
+# level high sehingga versi tambalan dipaksa lewat override.
+overrides:
+  '@opentelemetry/propagator-jaeger@<2.9.0': ^2.9.0
+  brace-expansion@<1.1.18: ^1.1.18
+  brace-expansion@>=2.0.0 <2.1.4: ^2.1.4
+  brace-expansion@>=4.0.0 <5.0.9: ^5.0.9
+  js-yaml@>=4.0.0 <4.3.0: ^4.3.0
