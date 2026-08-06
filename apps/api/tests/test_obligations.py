@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from decimal import Decimal
 from uuid import UUID
 
@@ -15,6 +16,18 @@ from tests.conftest import AuthTestEnvironment, login_as
 
 pytestmark = pytest.mark.anyio
 
+# Tanggal dibuat relatif terhadap hari berjalan supaya status tagihan tidak
+# berubah menjadi OVERDUE saat kalender melewati tanggal tetap.
+TODAY = date.today()
+TRANSACTION_DATE = (TODAY - timedelta(days=30)).isoformat()
+DUE_DATE = (TODAY + timedelta(days=30)).isoformat()
+FIRST_PAYMENT_DATE = (TODAY - timedelta(days=20)).isoformat()
+SECOND_PAYMENT_DATE = (TODAY - timedelta(days=10)).isoformat()
+OVERDUE_TRANSACTION_DATE = (TODAY - timedelta(days=90)).isoformat()
+OVERDUE_DUE_DATE = (TODAY - timedelta(days=60)).isoformat()
+# 21 hari setelah jatuh tempo supaya jatuh di bucket aging "Terlambat 1-30 hari".
+AGING_AS_OF = (TODAY - timedelta(days=39)).isoformat()
+
 
 def headers(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
@@ -28,8 +41,8 @@ def claim_payload(name: str, amount: str = "1000000.00") -> dict[str, object]:
     return {
         "party_name": name,
         "initial_amount": amount,
-        "transaction_date": "2026-07-01",
-        "due_date": "2026-08-01",
+        "transaction_date": TRANSACTION_DATE,
+        "due_date": DUE_DATE,
         "note": "Tagihan uji",
         "reminder_enabled": True,
         "reminder_days_before": 7,
@@ -86,7 +99,7 @@ async def test_partial_and_full_receivable_payment_with_automatic_journals(
         headers=headers(tokens.access_token),
         json={
             "amount": "400000.00",
-            "payment_date": "2026-07-15",
+            "payment_date": FIRST_PAYMENT_DATE,
             "payment_account": "BANK",
             "note": "Transfer pertama",
         },
@@ -105,7 +118,7 @@ async def test_partial_and_full_receivable_payment_with_automatic_journals(
     paid = await auth_environment.client.post(
         f"{url(auth_environment, 'receivables')}/{claim['id']}/payments",
         headers=headers(tokens.access_token),
-        json={"amount": "600000.00", "payment_date": "2026-07-20"},
+        json={"amount": "600000.00", "payment_date": SECOND_PAYMENT_DATE},
     )
     assert paid.status_code == 201, paid.text
     assert paid.json()["status"] == "PAID"
@@ -124,7 +137,7 @@ async def test_overpayment_is_rejected_without_side_effect(
     response = await auth_environment.client.post(
         f"{url(auth_environment, 'payables')}/{claim['id']}/payments",
         headers=headers(tokens.access_token),
-        json={"amount": "250000.01", "payment_date": "2026-07-20"},
+        json={"amount": "250000.01", "payment_date": FIRST_PAYMENT_DATE},
     )
     assert response.status_code == 409
 
@@ -144,7 +157,7 @@ async def test_overpayment_is_rejected_without_side_effect(
         headers=headers(tokens.access_token),
         json={
             "amount": "100000.00",
-            "payment_date": "2026-07-20",
+            "payment_date": SECOND_PAYMENT_DATE,
             "payment_account": "CASH",
         },
     )
@@ -169,7 +182,7 @@ async def test_unpaid_claim_can_be_cancelled_but_paid_claim_cannot(
     cancelled = await auth_environment.client.post(
         f"{url(auth_environment, 'receivables')}/{cancelled_claim['id']}/cancellation",
         headers=headers(tokens.access_token),
-        json={"reason": "Pesanan pelanggan dibatalkan", "cancellation_date": "2026-07-10"},
+        json={"reason": "Pesanan pelanggan dibatalkan", "cancellation_date": FIRST_PAYMENT_DATE},
     )
     assert cancelled.status_code == 200, cancelled.text
     assert cancelled.json()["status"] == "CANCELLED"
@@ -187,13 +200,13 @@ async def test_unpaid_claim_can_be_cancelled_but_paid_claim_cannot(
     payment = await auth_environment.client.post(
         f"{url(auth_environment, 'receivables')}/{paid_claim['id']}/payments",
         headers=headers(tokens.access_token),
-        json={"amount": "10000.00", "payment_date": "2026-07-10"},
+        json={"amount": "10000.00", "payment_date": FIRST_PAYMENT_DATE},
     )
     assert payment.status_code == 201
     rejected = await auth_environment.client.post(
         f"{url(auth_environment, 'receivables')}/{paid_claim['id']}/cancellation",
         headers=headers(tokens.access_token),
-        json={"reason": "Coba batalkan setelah bayar", "cancellation_date": "2026-07-11"},
+        json={"reason": "Coba batalkan setelah bayar", "cancellation_date": SECOND_PAYMENT_DATE},
     )
     assert rejected.status_code == 409
     async with auth_environment.session_factory() as session:
@@ -206,7 +219,7 @@ async def test_payable_payment_aging_due_filter_and_reminder_are_tenant_scoped(
 ) -> None:
     tokens = await login_as(auth_environment, identifier="owner@example.com")
     payload = claim_payload("PT Jatuh Tempo", "300000.00")
-    payload.update({"transaction_date": "2026-06-01", "due_date": "2026-06-30"})
+    payload.update({"transaction_date": OVERDUE_TRANSACTION_DATE, "due_date": OVERDUE_DUE_DATE})
     created = await auth_environment.client.post(
         url(auth_environment, "payables"), headers=headers(tokens.access_token), json=payload
     )
@@ -216,7 +229,7 @@ async def test_payable_payment_aging_due_filter_and_reminder_are_tenant_scoped(
 
     filtered = await auth_environment.client.get(
         url(auth_environment, "payables"),
-        params={"overdue_only": "true", "due_to": "2026-06-30"},
+        params={"overdue_only": "true", "due_to": OVERDUE_DUE_DATE},
         headers=headers(tokens.access_token),
     )
     assert filtered.status_code == 200
@@ -224,7 +237,7 @@ async def test_payable_payment_aging_due_filter_and_reminder_are_tenant_scoped(
 
     aging = await auth_environment.client.get(
         url(auth_environment, "obligations/aging"),
-        params={"as_of": "2026-07-21"},
+        params={"as_of": AGING_AS_OF},
         headers=headers(tokens.access_token),
     )
     assert aging.status_code == 200
@@ -233,12 +246,12 @@ async def test_payable_payment_aging_due_filter_and_reminder_are_tenant_scoped(
 
     generated_once = await auth_environment.client.post(
         url(auth_environment, "obligations/reminders/generate"),
-        params={"as_of": "2026-07-21"},
+        params={"as_of": AGING_AS_OF},
         headers=headers(tokens.access_token),
     )
     generated_twice = await auth_environment.client.post(
         url(auth_environment, "obligations/reminders/generate"),
-        params={"as_of": "2026-07-21"},
+        params={"as_of": AGING_AS_OF},
         headers=headers(tokens.access_token),
     )
     assert generated_once.status_code == 200
