@@ -1,7 +1,5 @@
 import type { FinancialReport, ReportExportFormat, ReportFilters } from '@kasta/contracts';
 
-import { publicConfig } from '$lib/config/public';
-
 import { ApiError, apiFetch, apiRequest, bearerHeaders } from './client';
 
 function query(filters: ReportFilters): string {

@@ -9,8 +9,6 @@ import type {
   StockMovementInput,
 } from '@kasta/contracts';
 
-import { publicConfig } from '$lib/config/public';
-
 import { ApiError, apiFetch, apiRequest, bearerHeaders } from './client';
 
 function inventoryPath(businessId: string, suffix: string): string {

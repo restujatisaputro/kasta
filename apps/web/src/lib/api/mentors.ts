@@ -14,8 +14,6 @@ import type {
   ReportExportFormat,
 } from '@kasta/contracts';
 
-import { publicConfig } from '$lib/config/public';
-
 import { ApiError, apiFetch, apiRequest, bearerHeaders } from './client';
 
 function jsonHeaders(token: string): HeadersInit {
