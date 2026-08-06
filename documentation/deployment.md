@@ -28,11 +28,11 @@ set `KASTA_MALWARE_SCAN_ENABLED=true` bila layanan scanner sudah dialokasikan re
 
 ## Domain dan reverse proxy
 
-| Domain | Tujuan |
-|---|---|
-| `kasta.admniaga.com` | Redirect permanen ke `appkasta.admniaga.com` |
-| `appkasta.admniaga.com` | Website SvelteKit |
-| `apikasta.admniaga.com` | API FastAPI dan signed URL MinIO |
+| Domain                  | Tujuan                                       |
+| ----------------------- | -------------------------------------------- |
+| `kasta.admniaga.com`    | Redirect permanen ke `appkasta.admniaga.com` |
+| `appkasta.admniaga.com` | Website SvelteKit                            |
+| `apikasta.admniaga.com` | API FastAPI dan signed URL MinIO             |
 
 `infrastructure/caddy/Caddyfile.production` mengatur routing tersebut. Caddy
 menerbitkan dan memperbarui sertifikat Let's Encrypt secara otomatis. DNS ketiga
@@ -207,13 +207,13 @@ membuka 80/443 dan akses SSH terbatas.
 Service stateless memakai `restart: unless-stopped`; job migration/role/seed memakai
 `restart: "no"` agar kegagalan terlihat dan tidak mengulang perubahan diam-diam.
 
-| Service | RAM | CPU |
-|---|---:|---:|
-| PostgreSQL | 1 GB | 2 |
-| MinIO | 1 GB | 2 |
-| API | 768 MB | 2 |
-| Web | 512 MB | 1 |
-| Caddy | 256 MB | 0.5 |
+| Service    |    RAM | CPU |
+| ---------- | -----: | --: |
+| PostgreSQL |   1 GB |   2 |
+| MinIO      |   1 GB |   2 |
+| API        | 768 MB |   2 |
+| Web        | 512 MB |   1 |
+| Caddy      | 256 MB | 0.5 |
 
 Sesuaikan setelah benchmark. Untuk rollback aplikasi, gunakan tag image rilis
 sebelumnya dan `docker compose up -d`; jangan melakukan downgrade migration yang

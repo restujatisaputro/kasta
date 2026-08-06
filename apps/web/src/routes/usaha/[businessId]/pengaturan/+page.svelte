@@ -21,7 +21,10 @@
   description="Sesuaikan pengingat, tampilan, dan keamanan akun."
 />
 <div class="mt-6 grid gap-4 lg:grid-cols-2">
-  <Card><h2 class="mb-4 font-black">Notifikasi</h2><NotificationPreferences businessId={data.businessId} /></Card>
+  <Card
+    ><h2 class="mb-4 font-black">Notifikasi</h2>
+    <NotificationPreferences businessId={data.businessId} /></Card
+  >
   <Card
     ><h2 class="font-black">Akun dan keamanan</h2>
     <div class="mt-4 grid gap-2">
