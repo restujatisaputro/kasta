@@ -30,7 +30,7 @@ dev = [
   "aiosqlite>=0.21,<1",
   "httpx>=0.28,<1",
   "hypothesis>=6.157,<7",
-  "mypy>=1.14,<2",
+  "mypy>=1.14,<3",
   "pytest>=8.3,<9",
   "ruff>=0.9,<1",
 ]
