@@ -21,7 +21,7 @@
     "lint": "redocly lint openapi/kasta-api.yaml && tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
-    "@redocly/cli": "^1.34.2",
+    "@redocly/cli": "^2.43.2",
     "typescript": "^5.8.2"
   }
 }
