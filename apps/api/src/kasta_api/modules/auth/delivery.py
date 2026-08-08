@@ -6,7 +6,9 @@ import logging
 import smtplib
 from email.message import EmailMessage
 from email.utils import parseaddr
+from html import escape
 from urllib.error import HTTPError, URLError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 from sqlalchemy import select
@@ -19,30 +21,63 @@ from kasta_api.modules.auth.security import OutboxCipher, utc_now
 logger = logging.getLogger(__name__)
 
 
+def verification_link(settings: Settings, token: str) -> str:
+    """Tautan sekali klik yang menyelesaikan verifikasi akun di web."""
+    return f"{settings.web_base_url_string}/verifikasi?token={quote(token, safe='')}"
+
+
+def _render_verification_html(heading: str, explanation: str, link: str) -> str:
+    safe_link = escape(link, quote=True)
+    return (
+        '<html><body style="font-family:system-ui,sans-serif;line-height:1.6;color:#1f2937">'
+        f'<h1 style="font-size:20px">{escape(heading)}</h1>'
+        f"<p>{escape(explanation)}</p>"
+        f'<p><a href="{safe_link}" '
+        'style="display:inline-block;padding:12px 20px;border-radius:12px;'
+        'background:#0f766e;color:#ffffff;text-decoration:none;font-weight:700">'
+        "Verifikasi akun</a></p>"
+        "<p>Jika tombol tidak berfungsi, salin alamat berikut ke peramban:<br>"
+        f'<a href="{safe_link}">{safe_link}</a></p>'
+        "<p>Tautan ini bersifat rahasia dan akan kedaluwarsa. "
+        "Jika Anda tidak meminta ini, abaikan email ini.</p>"
+        "</body></html>"
+    )
+
+
 def _render_message(settings: Settings, destination: str, payload: dict[str, str]) -> EmailMessage:
     purpose = payload["purpose"]
     token = payload["token"]
-    if purpose == "VERIFY_EMAIL":
-        subject = "Kode verifikasi akun KASTA"
-        heading = "Verifikasi akun KASTA Anda"
-        explanation = "Masukkan kode berikut pada halaman verifikasi akun:"
-    elif purpose == "RESET_PASSWORD":
-        subject = "Kode pengaturan ulang password KASTA"
-        heading = "Atur ulang password KASTA Anda"
-        explanation = "Masukkan kode berikut pada halaman pengaturan ulang password:"
-    else:
-        raise ValueError(f"Template email tidak didukung: {purpose}")
-
     message = EmailMessage()
     message["From"] = settings.mail_from
     message["To"] = destination
-    message["Subject"] = subject
-    message.set_content(
-        f"{heading}\n\n{explanation}\n\n{token}\n\n"
-        "Kode ini bersifat rahasia dan akan kedaluwarsa. Jika Anda tidak meminta kode ini, "
-        "abaikan email ini.\n"
-    )
-    return message
+
+    if purpose == "VERIFY_EMAIL":
+        heading = "Verifikasi akun KASTA Anda"
+        explanation = "Klik tombol berikut untuk menyelesaikan pendaftaran akun KASTA Anda:"
+        link = verification_link(settings, token)
+        message["Subject"] = "Verifikasi akun KASTA"
+        message.set_content(
+            f"{heading}\n\n{explanation}\n\n{link}\n\n"
+            "Tautan ini bersifat rahasia dan akan kedaluwarsa. Jika Anda tidak meminta ini, "
+            "abaikan email ini.\n"
+        )
+        message.add_alternative(
+            _render_verification_html(heading, explanation, link), subtype="html"
+        )
+        return message
+
+    if purpose == "RESET_PASSWORD":
+        message["Subject"] = "Kode pengaturan ulang password KASTA"
+        message.set_content(
+            "Atur ulang password KASTA Anda\n\n"
+            "Masukkan kode berikut pada halaman pengaturan ulang password:\n\n"
+            f"{token}\n\n"
+            "Kode ini bersifat rahasia dan akan kedaluwarsa. Jika Anda tidak meminta kode ini, "
+            "abaikan email ini.\n"
+        )
+        return message
+
+    raise ValueError(f"Template email tidak didukung: {purpose}")
 
 
 def _send_message(settings: Settings, message: EmailMessage) -> None:

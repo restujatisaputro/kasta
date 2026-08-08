@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     refresh_token_days: int = Field(default=30, ge=1, le=365)
     verification_token_minutes: int = Field(default=30, ge=5, le=1440)
     password_reset_token_minutes: int = Field(default=15, ge=5, le=120)
+    web_base_url: AnyHttpUrl = AnyHttpUrl("http://localhost:5173")
     mail_enabled: bool = False
     smtp_host: str = "localhost"
     smtp_port: int = Field(default=25, ge=1, le=65535)
@@ -96,6 +97,10 @@ class Settings(BaseSettings):
         return [str(origin).rstrip("/") for origin in self.cors_origins]
 
     @property
+    def web_base_url_string(self) -> str:
+        return str(self.web_base_url).rstrip("/")
+
+    @property
     def expose_api_docs(self) -> bool:
         return self.environment in {"local", "test", "staging"}
 
@@ -138,6 +143,7 @@ class Settings(BaseSettings):
             or self.access_token_minutes > 15
             or any(origin.scheme != "https" for origin in self.cors_origins)
             or not self.object_public_endpoint.startswith("https://")
+            or self.web_base_url.scheme != "https"
         ):
             raise ValueError("Production configuration does not meet the security baseline")
         if self.cors_allow_credentials and "*" in self.cors_origin_strings:

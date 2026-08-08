@@ -63,6 +63,9 @@ Tag image production harus immutable (tag rilis atau digest), bukan `latest`.
 3. Gunakan password URL-safe pada `KASTA_MIGRATION_DATABASE_URL`, atau URL-encode
    password tersebut. Jangan menaruh nilai ini di GitHub Actions log.
 4. Pastikan `KASTA_CORS_ORIGINS` berupa JSON array HTTPS, tanpa wildcard.
+5. Set `KASTA_WEB_BASE_URL` ke origin website, misalnya `https://appkasta.admniaga.com`.
+   Nilai ini dipakai membangun tautan verifikasi pada email pendaftaran, sehingga
+   salah isi membuat tautan mengarah ke host yang keliru. Production menolak nilai non-HTTPS.
 
 Contoh pembuatan nilai acak (jalankan di mesin admin, bukan commit):
 
