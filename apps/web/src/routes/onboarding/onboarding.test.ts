@@ -53,6 +53,49 @@ describe('onboarding utama', () => {
     expect(screen.getByRole('button', { name: 'Buat akun' })).toBeTruthy();
   });
 
+  it('menerima kode dari email sebagai cadangan tautan verifikasi', async () => {
+    const json = (body: unknown) =>
+      new Response(JSON.stringify(body), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.endsWith('/onboarding/account')) return Promise.resolve(json({ user_id: 'u-1' }));
+        if (url.endsWith('/onboarding/verify'))
+          return Promise.resolve(json({ onboarding_token: 'token-onboarding' }));
+        return Promise.resolve(json([]));
+      }),
+    );
+
+    render(OnboardingPage);
+    await fireEvent.input(screen.getByLabelText('Nama lengkap'), {
+      target: { value: 'Sari Wulandari' },
+    });
+    await fireEvent.input(screen.getByLabelText('Email'), {
+      target: { value: 'sari@email.com' },
+    });
+    await fireEvent.input(screen.getByLabelText('Password'), {
+      target: { value: 'kata-sandi-panjang' },
+    });
+    await fireEvent.click(screen.getByRole('button', { name: 'Buat akun' }));
+
+    const codeField = await screen.findByLabelText('Kode verifikasi');
+    await fireEvent.input(codeField, { target: { value: 'uuid.rahasia' } });
+    await fireEvent.click(screen.getByRole('button', { name: 'Verifikasi dengan kode' }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Bagaimana Anda menggunakan KASTA?' }),
+    ).toBeTruthy();
+    const verifyCall = vi
+      .mocked(fetch)
+      .mock.calls.find((call) => String(call[0]).endsWith('/onboarding/verify'));
+    expect(verifyCall).toBeTruthy();
+    expect(JSON.parse(String(verifyCall?.[1]?.body))).toEqual({ token: 'uuid.rahasia' });
+  });
+
   it('menahan pengguna di langkah pertama ketika data belum lengkap', async () => {
     render(OnboardingPage);
 

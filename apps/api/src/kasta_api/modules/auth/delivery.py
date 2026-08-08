@@ -26,7 +26,7 @@ def verification_link(settings: Settings, token: str) -> str:
     return f"{settings.web_base_url_string}/verifikasi?token={quote(token, safe='')}"
 
 
-def _render_verification_html(heading: str, explanation: str, link: str) -> str:
+def _render_verification_html(heading: str, explanation: str, link: str, token: str) -> str:
     safe_link = escape(link, quote=True)
     return (
         '<html><body style="font-family:system-ui,sans-serif;line-height:1.6;color:#1f2937">'
@@ -38,7 +38,12 @@ def _render_verification_html(heading: str, explanation: str, link: str) -> str:
         "Verifikasi akun</a></p>"
         "<p>Jika tombol tidak berfungsi, salin alamat berikut ke peramban:<br>"
         f'<a href="{safe_link}">{safe_link}</a></p>'
-        "<p>Tautan ini bersifat rahasia dan akan kedaluwarsa. "
+        "<p>Membuka email ini di perangkat lain? Salin kode verifikasi berikut, "
+        "lalu tempel pada halaman pendaftaran KASTA:</p>"
+        '<p style="padding:12px 16px;border-radius:12px;background:#f1f5f9;'
+        'font-family:ui-monospace,monospace;font-size:13px;word-break:break-all">'
+        f"{escape(token)}</p>"
+        "<p>Tautan dan kode ini bersifat rahasia, hanya berlaku sekali, dan akan kedaluwarsa. "
         "Jika Anda tidak meminta ini, abaikan email ini.</p>"
         "</body></html>"
     )
@@ -53,16 +58,19 @@ def _render_message(settings: Settings, destination: str, payload: dict[str, str
 
     if purpose == "VERIFY_EMAIL":
         heading = "Verifikasi akun KASTA Anda"
-        explanation = "Klik tombol berikut untuk menyelesaikan pendaftaran akun KASTA Anda:"
+        explanation = "Klik tautan berikut untuk menyelesaikan pendaftaran akun KASTA Anda:"
         link = verification_link(settings, token)
         message["Subject"] = "Verifikasi akun KASTA"
         message.set_content(
             f"{heading}\n\n{explanation}\n\n{link}\n\n"
-            "Tautan ini bersifat rahasia dan akan kedaluwarsa. Jika Anda tidak meminta ini, "
-            "abaikan email ini.\n"
+            "Membuka email ini di perangkat lain? Salin kode verifikasi berikut, lalu tempel "
+            "pada halaman pendaftaran KASTA:\n\n"
+            f"{token}\n\n"
+            "Tautan dan kode ini bersifat rahasia, hanya berlaku sekali, dan akan kedaluwarsa. "
+            "Jika Anda tidak meminta ini, abaikan email ini.\n"
         )
         message.add_alternative(
-            _render_verification_html(heading, explanation, link), subtype="html"
+            _render_verification_html(heading, explanation, link, token), subtype="html"
         )
         return message
 

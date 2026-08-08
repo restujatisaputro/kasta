@@ -9,7 +9,7 @@ const publicPages = [
   { path: '/kebijakan-privasi', heading: 'Kebijakan Privasi' },
   { path: '/syarat-penggunaan', heading: 'Syarat Penggunaan' },
   { path: '/login', heading: 'Selamat datang kembali' },
-  { path: '/registrasi', heading: 'Mulai catat usaha' },
+  { path: '/onboarding', heading: 'Buat akun KASTA' },
   { path: '/lupa-password', heading: 'Atur ulang kata sandi' },
 ];
 

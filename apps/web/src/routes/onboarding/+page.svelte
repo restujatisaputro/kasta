@@ -17,6 +17,7 @@
     getBusinessCategories,
     requestVerification,
     uploadBusinessLogo,
+    verifyAccount,
   } from '$lib/api/onboarding';
   import { businessScales, businessTypes, paymentOptions } from '$lib/onboarding/options';
   import { takeOnboardingToken } from '$lib/onboarding/resume';
@@ -34,6 +35,7 @@
   let fullName = $state('');
   let identifier = $state('');
   let password = $state('');
+  let verificationCode = $state('');
   let onboardingToken = $state('');
   let categories = $state<BusinessCategory[]>([]);
   let logo = $state<File | null>(null);
@@ -160,6 +162,32 @@
     } catch (error) {
       errorMessage =
         error instanceof Error ? error.message : 'Tautan verifikasi belum dapat dikirim ulang.';
+    } finally {
+      busy = false;
+    }
+  }
+
+  /* Cadangan bila email dibuka di perangkat lain: kode pada email adalah token
+     yang sama dengan yang dibawa tautan, jadi jalurnya pun sama. */
+  async function submitVerificationCode(): Promise<void> {
+    const code = verificationCode.trim();
+    if (!code) {
+      errorMessage = 'Tempel kode verifikasi dari email Anda.';
+      return;
+    }
+    busy = true;
+    errorMessage = '';
+    try {
+      const response = await verifyAccount(code);
+      onboardingToken = response.onboarding_token;
+      verificationCode = '';
+      notice = 'Akun sudah terverifikasi.';
+      step = 3;
+    } catch (error) {
+      errorMessage =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Kode sudah kedaluwarsa atau pernah dipakai.';
     } finally {
       busy = false;
     }
@@ -329,9 +357,34 @@
             Tautan hanya berlaku sekali dan untuk waktu terbatas. Tidak menemukan pesannya? Periksa
             folder spam terlebih dahulu.
           </p>
+          <form
+            class="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5"
+            onsubmit={(event) => {
+              event.preventDefault();
+              void submitVerificationCode();
+            }}
+          >
+            <p class="text-sm font-semibold text-slate-700">Membuka email di perangkat lain?</p>
+            <p class="mt-1 text-sm text-slate-600">
+              Salin kode verifikasi pada email tersebut, lalu tempel di sini.
+            </p>
+            <label class="mt-4 block text-sm font-semibold text-slate-700"
+              >Kode verifikasi<input
+                bind:value={verificationCode}
+                autocomplete="one-time-code"
+                spellcheck="false"
+                class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 font-mono text-sm font-normal"
+                placeholder="Tempel kode dari email"
+              /></label
+            >
+            <button
+              class="mt-4 w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white"
+              disabled={busy}>{busy ? 'Memverifikasi…' : 'Verifikasi dengan kode'}</button
+            >
+          </form>
           <button
             type="button"
-            class="mt-8 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700"
+            class="mt-4 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700"
             disabled={busy}
             onclick={() => void resendVerification()}
           >

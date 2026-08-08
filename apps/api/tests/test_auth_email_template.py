@@ -31,7 +31,7 @@ def test_verification_link_meng_encode_karakter_khusus() -> None:
     assert link.endswith("/verifikasi?token=abc%20def%26x%3D1")
 
 
-def test_email_verifikasi_berisi_tautan_bukan_kode_manual() -> None:
+def test_email_verifikasi_berisi_tautan_sekali_klik_dan_kode_cadangan() -> None:
     message = _render_message(
         _settings(), "pengguna@example.com", {"purpose": "VERIFY_EMAIL", "token": TOKEN}
     )
@@ -39,8 +39,8 @@ def test_email_verifikasi_berisi_tautan_bukan_kode_manual() -> None:
 
     assert message["Subject"] == "Verifikasi akun KASTA"
     assert f"https://appkasta.admniaga.com/verifikasi?token={TOKEN}" in body
-    # Token tidak boleh muncul sebagai kode berdiri sendiri untuk disalin manual.
-    assert f"\n{TOKEN}\n" not in body
+    # Kode berdiri sendiri tetap disertakan untuk pengguna yang membuka email di perangkat lain.
+    assert f"\n{TOKEN}\n" in body
 
 
 def test_email_verifikasi_menyertakan_alternatif_html_yang_dapat_diklik() -> None:
@@ -50,9 +50,9 @@ def test_email_verifikasi_menyertakan_alternatif_html_yang_dapat_diklik() -> Non
     html_part = message.get_body(preferencelist=("html",))
 
     assert html_part is not None
-    assert f'href="https://appkasta.admniaga.com/verifikasi?token={TOKEN}"' in (
-        html_part.get_content()
-    )
+    html = html_part.get_content()
+    assert f'href="https://appkasta.admniaga.com/verifikasi?token={TOKEN}"' in html
+    assert TOKEN in html.split("</a></p>")[-1]
 
 
 def test_email_reset_password_masih_memakai_kode() -> None:

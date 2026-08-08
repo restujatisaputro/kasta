@@ -16,7 +16,8 @@ Nilai `PUBLIC_*` masuk ke browser dan tidak boleh berisi secret. Seluruh akses A
 ## Area dan rute
 
 - Publik: `/`, `/tentang`, `/fitur`, `/bantuan`, `/kebijakan-privasi`,
-  `/syarat-penggunaan`, `/login`, `/registrasi`, dan `/lupa-password`.
+  `/syarat-penggunaan`, `/login`, `/onboarding`, dan `/lupa-password`. Pendaftaran memakai
+  satu pintu di `/onboarding`; `/registrasi` hanya pengalihan permanen ke sana.
 - UMKM: `/usaha/{businessId}` beserta transaksi, Uang Masuk, Uang Keluar, Foto Nota, produk,
   stok, utang, piutang, laporan, pembina, anggota, profil, dan pengaturan.
 - Pembina: `/pembina` beserta UMKM binaan, detail UMKM, catatan, rekomendasi, jadwal,
