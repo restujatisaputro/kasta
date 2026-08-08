@@ -75,7 +75,7 @@
   {:else if businesses.length === 0}
     <div class="space-y-4 text-center">
       <p class="text-[var(--text-muted)]">Belum ada usaha aktif yang dapat Anda akses.</p>
-      <Button href="/registrasi" variant="secondary" full>Buat akun atau usaha baru</Button>
+      <Button href="/onboarding" variant="secondary" full>Buat akun atau usaha baru</Button>
     </div>
   {:else}
     <div class="space-y-3">

@@ -68,7 +68,7 @@
           di belakang layar agar Anda dapat fokus menjalankan usaha.
         </p>
         <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Button href="/registrasi">Buat akun gratis <Icon name="arrow-right" /></Button><Button
+          <Button href="/onboarding">Buat akun gratis <Icon name="arrow-right" /></Button><Button
             href="/fitur"
             variant="secondary">Lihat semua fitur</Button
           >
@@ -260,7 +260,7 @@
             Gratis untuk mencoba. Tidak perlu memahami istilah akuntansi.
           </p>
         </div>
-        <Button href="/registrasi" variant="secondary">Buat akun KASTA</Button>
+        <Button href="/onboarding" variant="secondary">Buat akun KASTA</Button>
       </div>
     </div>
   </section>

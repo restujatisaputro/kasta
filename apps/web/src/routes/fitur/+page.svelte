@@ -102,7 +102,7 @@
           >{/each}
       </div>
       <div class="mt-10 flex justify-center">
-        <Button href="/registrasi">Mulai menggunakan KASTA</Button>
+        <Button href="/onboarding">Mulai menggunakan KASTA</Button>
       </div>
     </div>
   </section></MarketingShell

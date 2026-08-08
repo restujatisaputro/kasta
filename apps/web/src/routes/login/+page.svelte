@@ -98,7 +98,7 @@
     <Button type="submit" full disabled={busy}>{busy ? 'Sedang masuk…' : 'Masuk'}</Button>
   </form>
   <p class="mt-6 text-center text-sm text-[var(--text-muted)]">
-    Belum punya akun? <a class="font-extrabold text-kasta-700 hover:underline" href="/registrasi"
+    Belum punya akun? <a class="font-extrabold text-kasta-700 hover:underline" href="/onboarding"
       >Daftar gratis</a
     >
   </p>

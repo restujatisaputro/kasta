@@ -50,14 +50,6 @@ export function register(payload: {
   });
 }
 
-export function confirmVerification(token: string): Promise<MessageResult> {
-  return apiRequest('/auth/verification/confirm', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token }),
-  });
-}
-
 export function forgotPassword(identifier: string): Promise<MessageResult> {
   return apiRequest('/auth/password/forgot', {
     method: 'POST',

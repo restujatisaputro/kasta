@@ -17,9 +17,9 @@
     getBusinessCategories,
     requestVerification,
     uploadBusinessLogo,
-    verifyAccount,
   } from '$lib/api/onboarding';
   import { businessScales, businessTypes, paymentOptions } from '$lib/onboarding/options';
+  import { takeOnboardingToken } from '$lib/onboarding/resume';
   import { authSession } from '$lib/stores/auth-session';
 
   const TOTAL_STEPS = 9;
@@ -34,7 +34,6 @@
   let fullName = $state('');
   let identifier = $state('');
   let password = $state('');
-  let verificationToken = $state('');
   let onboardingToken = $state('');
   let categories = $state<BusinessCategory[]>([]);
   let logo = $state<File | null>(null);
@@ -63,6 +62,14 @@
   );
 
   onMount(async () => {
+    /* Pengguna yang tiba dari tautan verifikasi di email sudah membawa token
+       onboarding, jadi langkah akun dan verifikasi tidak perlu diulang. */
+    const verified = takeOnboardingToken();
+    if (verified) {
+      onboardingToken = verified;
+      notice = 'Akun sudah terverifikasi.';
+      step = 3;
+    }
     try {
       categories = await getBusinessCategories();
     } catch {
@@ -131,30 +138,10 @@
         password,
         ...(accountType === 'email' ? { email: identifier } : { phone: identifier }),
       });
-      notice = `Petunjuk verifikasi dikirim ke ${identifier}.`;
+      notice = `Tautan verifikasi dikirim ke ${identifier}.`;
       step = 2;
     } catch (error) {
       errorMessage = error instanceof Error ? error.message : 'Akun belum dapat dibuat.';
-    } finally {
-      busy = false;
-    }
-  }
-
-  async function submitVerification(): Promise<void> {
-    if (verificationToken.trim().length < 20) {
-      errorMessage = 'Masukkan kode verifikasi dari email atau SMS.';
-      return;
-    }
-    busy = true;
-    errorMessage = '';
-    try {
-      const response = await verifyAccount(verificationToken.trim());
-      onboardingToken = response.onboarding_token;
-      notice = 'Akun sudah terverifikasi.';
-      step = 3;
-    } catch (error) {
-      errorMessage =
-        error instanceof Error ? error.message : 'Kode verifikasi tidak dapat digunakan.';
     } finally {
       busy = false;
     }
@@ -169,10 +156,10 @@
     errorMessage = '';
     try {
       const response = await requestVerification(identifier.trim());
-      notice = response.message || `Kode verifikasi dikirim ulang ke ${identifier.trim()}.`;
+      notice = response.message || `Tautan verifikasi dikirim ulang ke ${identifier.trim()}.`;
     } catch (error) {
       errorMessage =
-        error instanceof Error ? error.message : 'Kode verifikasi belum dapat dikirim ulang.';
+        error instanceof Error ? error.message : 'Tautan verifikasi belum dapat dikirim ulang.';
     } finally {
       busy = false;
     }
@@ -332,34 +319,24 @@
             >
           </form>
         {:else if step === 2}
-          <form
-            onsubmit={(event) => {
-              event.preventDefault();
-              void submitVerification();
-            }}
+          <p class="eyebrow">Periksa pesan Anda</p>
+          <h1 class="title">Verifikasi akun</h1>
+          <p class="subtitle">
+            Kami mengirim tautan verifikasi ke {identifier || 'alamat Anda'}. Buka pesan dari KASTA,
+            lalu klik tautannya. Penyiapan usaha akan dilanjutkan secara otomatis.
+          </p>
+          <p class="mt-6 text-sm text-slate-600">
+            Tautan hanya berlaku sekali dan untuk waktu terbatas. Tidak menemukan pesannya? Periksa
+            folder spam terlebih dahulu.
+          </p>
+          <button
+            type="button"
+            class="mt-8 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700"
+            disabled={busy}
+            onclick={() => void resendVerification()}
           >
-            <p class="eyebrow">Periksa pesan Anda</p>
-            <h1 class="title">Verifikasi akun</h1>
-            <p class="subtitle">Buka pesan dari KASTA, lalu tempel kode verifikasinya di bawah.</p>
-            <label class="mt-7 block"
-              >Kode verifikasi<textarea
-                bind:value={verificationToken}
-                rows="3"
-                placeholder="Tempel kode verifikasi"
-              ></textarea></label
-            >
-            <button class="primary-button mt-8" disabled={busy}
-              >{busy ? 'Memeriksa…' : 'Verifikasi akun'}</button
-            >
-            <button
-              type="button"
-              class="mt-4 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700"
-              disabled={busy}
-              onclick={() => void resendVerification()}
-            >
-              {busy ? 'Mengirim…' : 'Kirim ulang kode verifikasi'}
-            </button>
-          </form>
+            {busy ? 'Mengirim…' : 'Kirim ulang tautan verifikasi'}
+          </button>
         {:else if step === 3}
           <p class="eyebrow">Peran Anda</p>
           <h1 class="title">Bagaimana Anda menggunakan KASTA?</h1>

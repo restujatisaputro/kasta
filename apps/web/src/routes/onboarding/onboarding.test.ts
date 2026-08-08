@@ -29,6 +29,20 @@ describe('onboarding utama', () => {
   afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
+    sessionStorage.clear();
+  });
+
+  it('melanjutkan langsung ke penyiapan usaha saat tiba dari tautan verifikasi', async () => {
+    sessionStorage.setItem('kasta-onboarding-token', 'token-onboarding');
+
+    render(OnboardingPage);
+
+    expect(
+      await screen.findByRole('heading', { name: 'Bagaimana Anda menggunakan KASTA?' }),
+    ).toBeTruthy();
+    expect(screen.getByLabelText('Langkah 3 dari 9')).toBeTruthy();
+    // Token sekali pakai tidak boleh tertinggal untuk kunjungan berikutnya.
+    expect(sessionStorage.getItem('kasta-onboarding-token')).toBeNull();
   });
 
   it('menampilkan langkah pembuatan akun dengan bahasa sederhana', () => {

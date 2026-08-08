@@ -60,7 +60,7 @@
       <div class="hidden items-center gap-2 md:flex">
         <DarkModeToggle />
         <Button href="/login" variant="ghost">Masuk</Button>
-        <Button href="/registrasi">Daftar gratis</Button>
+        <Button href="/onboarding">Daftar gratis</Button>
       </div>
 
       <div class="relative md:hidden">
@@ -96,7 +96,7 @@
             <a
               class="block rounded-xl bg-kasta-700 px-3 py-3 text-center font-bold text-white"
               onclick={() => (menuOpen = false)}
-              href="/registrasi">Daftar gratis</a
+              href="/onboarding">Daftar gratis</a
             >
           </nav>
         {/if}
