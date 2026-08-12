@@ -1,6 +1,6 @@
 FROM ghcr.io/astral-sh/uv:0.11.23 AS uv
 
-FROM python:3.14.6-slim AS builder
+FROM python:3.15.0rc1-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_COMPILE_BYTECODE=1 \
@@ -13,7 +13,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY apps/api/src ./src
 RUN uv sync --frozen --no-dev --no-editable
 
-FROM python:3.14.6-slim AS runtime
+FROM python:3.15.0rc1-slim AS runtime
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
