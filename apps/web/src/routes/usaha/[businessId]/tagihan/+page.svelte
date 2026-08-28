@@ -39,6 +39,8 @@
   let dueTo = $state('');
   let overdueOnly = $state(false);
   let form = $state<ObligationInput>(emptyForm());
+  let settledOnCreate = $state(false);
+  let settledPaymentAccount = $state<'CASH' | 'BANK'>('CASH');
   let paymentAmount = $state('');
   let paymentAccount = $state<'CASH' | 'BANK'>('CASH');
   let paymentNote = $state('');
@@ -111,10 +113,24 @@
     }
     busy = true;
     try {
-      await createObligation(data.businessId, $authSession.accessToken, kind, form);
-      notice = `${kind === 'RECEIVABLE' ? 'Piutang' : 'Utang'} berhasil dicatat.`;
+      const payload: ObligationInput = settledOnCreate
+        ? { ...form, due_date: form.transaction_date }
+        : form;
+      const created = await createObligation(data.businessId, $authSession.accessToken, kind, payload);
+      if (settledOnCreate) {
+        await payObligation(data.businessId, $authSession.accessToken, kind, created.id, {
+          amount: created.initial_amount,
+          payment_date: form.transaction_date,
+          payment_account: settledPaymentAccount,
+          note: 'Lunas saat pencatatan',
+        });
+      }
+      notice = settledOnCreate
+        ? `${kind === 'RECEIVABLE' ? 'Piutang' : 'Utang'} lunas berhasil dicatat.`
+        : `${kind === 'RECEIVABLE' ? 'Piutang' : 'Utang'} berhasil dicatat.`;
       formOpen = false;
       form = emptyForm();
+      settledOnCreate = false;
       await loadAll();
     } catch (error) {
       errorMessage = messageOf(error, 'Tagihan belum dapat disimpan.');
@@ -221,6 +237,8 @@
         class="rounded-xl bg-emerald-700 px-5 py-3 font-bold text-white"
         onclick={() => {
           form = emptyForm();
+          settledOnCreate = false;
+          settledPaymentAccount = 'CASH';
           formOpen = true;
         }}>Tambah {kind === 'RECEIVABLE' ? 'piutang' : 'utang'}</button
       >
@@ -392,24 +410,35 @@
             required
             bind:value={form.transaction_date}
           /></label
-        ><label
-          >Tanggal jatuh tempo<input
-            class="mt-1 w-full rounded-xl border p-3"
-            type="date"
-            required
-            bind:value={form.due_date}
-          /></label
-        ><label
-          >Ingatkan sebelum<input
-            class="mt-1 w-full rounded-xl border p-3"
-            type="number"
-            min="0"
-            max="90"
-            bind:value={form.reminder_days_before}
-          /> hari</label
-        ><label class="sm:col-span-2"
+        >{#if !settledOnCreate}<label
+            >Tanggal jatuh tempo<input
+              class="mt-1 w-full rounded-xl border p-3"
+              type="date"
+              required
+              bind:value={form.due_date}
+            /></label
+          ><label
+            >Ingatkan sebelum<input
+              class="mt-1 w-full rounded-xl border p-3"
+              type="number"
+              min="0"
+              max="90"
+              bind:value={form.reminder_days_before}
+            /> hari</label
+          >{/if}<label class="sm:col-span-2"
           >Catatan<input class="mt-1 w-full rounded-xl border p-3" bind:value={form.note} /></label
         >
+        <label
+          class="flex items-center gap-2 rounded-xl bg-slate-50 p-3 font-semibold sm:col-span-2"
+          ><input type="checkbox" bind:checked={settledOnCreate} /> Sudah lunas sejak dicatat (tidak perlu
+          bayar nanti)</label
+        >{#if settledOnCreate}<label class="sm:col-span-2"
+            >Dibayar melalui<select
+              class="mt-1 w-full rounded-xl border p-3"
+              bind:value={settledPaymentAccount}
+              ><option value="CASH">Kas</option><option value="BANK">Bank</option></select
+            ></label
+          >{/if}
       </div>
       <div class="mt-6 flex justify-end gap-2">
         <button
