@@ -117,6 +117,13 @@ class BusinessProfile(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base
         CheckConstraint(
             "recording_method IN ('CASH', 'ACCRUAL')", name="business_recording_method"
         ),
+        CheckConstraint(
+            "inventory_mode IN ('SIMPLE', 'PERPETUAL')", name="business_inventory_mode"
+        ),
+        CheckConstraint(
+            "closing_frequency IN ('MONTHLY', 'SEMIANNUAL', 'TRIANNUAL')",
+            name="business_closing_frequency",
+        ),
         CheckConstraint("status IN ('ACTIVE', 'INACTIVE')", name="business_profile_status"),
     )
 
@@ -143,6 +150,12 @@ class BusinessProfile(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base
         String(50), default="Asia/Jakarta", server_default="Asia/Jakarta"
     )
     recording_method: Mapped[str] = mapped_column(String(20), default="CASH", server_default="CASH")
+    inventory_mode: Mapped[str] = mapped_column(
+        String(20), default="SIMPLE", server_default="SIMPLE"
+    )
+    closing_frequency: Mapped[str] = mapped_column(
+        String(20), default="MONTHLY", server_default="MONTHLY"
+    )
     status: Mapped[str] = mapped_column(String(20), default="ACTIVE", server_default="ACTIVE")
     has_products_and_stock: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default="false"

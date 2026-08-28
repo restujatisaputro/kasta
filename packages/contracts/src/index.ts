@@ -69,6 +69,8 @@ export interface BusinessProfile {
   currency: 'IDR' | 'USD' | 'SGD' | 'MYR';
   timezone: 'Asia/Jakarta' | 'Asia/Makassar' | 'Asia/Jayapura';
   recording_method: 'CASH' | 'ACCRUAL';
+  inventory_mode: 'SIMPLE' | 'PERPETUAL';
+  closing_frequency: 'MONTHLY' | 'SEMIANNUAL' | 'TRIANNUAL';
   status: 'ACTIVE' | 'INACTIVE';
   payment_methods: PaymentMethodCode[];
   opening_balance: string;
@@ -774,4 +776,53 @@ export interface MentorAccessHistory {
   scope: string[];
   reason: string | null;
   accessed_at: string;
+}
+
+export type ClosingFrequency = 'MONTHLY' | 'SEMIANNUAL' | 'TRIANNUAL';
+
+export interface AccountActivityLine {
+  account_key: string;
+  account_name: string;
+  amount: string;
+}
+
+export interface CurrentPeriod {
+  period_start: string;
+  period_end_suggested: string;
+  as_of: string;
+  frequency: ClosingFrequency;
+  revenues: AccountActivityLine[];
+  expenses: AccountActivityLine[];
+  total_revenue: string;
+  total_expense: string;
+  net_profit: string;
+  is_loss: boolean;
+  has_activity: boolean;
+  is_overdue: boolean;
+  explanation: string;
+}
+
+export interface ClosePeriodRequest {
+  period_end: string;
+  note?: string;
+  acknowledge_adjustments: boolean;
+}
+
+export interface PeriodClosing {
+  id: string;
+  business_id: string;
+  period_start: string;
+  period_end: string;
+  total_revenue: string;
+  total_expense: string;
+  net_profit: string;
+  closing_transaction_id: string | null;
+  closed_by_user_id: string;
+  note: string | null;
+  created_at: string;
+}
+
+export interface PeriodClosingList {
+  items: PeriodClosing[];
+  total: number;
 }

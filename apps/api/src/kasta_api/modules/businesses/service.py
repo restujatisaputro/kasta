@@ -124,6 +124,8 @@ class BusinessService:
             currency=payload.currency,
             timezone=payload.timezone,
             recording_method=payload.recording_method,
+            inventory_mode="SIMPLE",
+            closing_frequency="MONTHLY",
             status="ACTIVE",
             has_products_and_stock=payload.has_products_and_stock,
             tutorial_completed_at=now,
@@ -228,7 +230,9 @@ class BusinessService:
             next_path=f"/usaha/{business_id}/profil",
         )
 
-    async def get_profile(self, business_id: UUID) -> BusinessProfileResponse:
+    async def _load_full_profile(
+        self, business_id: UUID
+    ) -> tuple[Business, BusinessProfile, BusinessCategory, list[BusinessPaymentMethod], Decimal]:
         business = await self.repository.get_business(business_id)
         profile = await self.repository.get_profile(business_id)
         completion = await self.repository.get_completion_for_business(business_id)
@@ -243,23 +247,29 @@ class BusinessService:
                 detail="Kategori pada profil usaha sudah tidak tersedia.",
             )
         methods = await self.repository.get_payment_methods(business_id)
-        return self._profile_response(
-            business, profile, category, methods, completion.opening_balance
+        return business, profile, category, methods, completion.opening_balance
+
+    async def get_profile(self, business_id: UUID) -> BusinessProfileResponse:
+        business, profile, category, methods, opening_balance = await self._load_full_profile(
+            business_id
         )
+        return self._profile_response(business, profile, category, methods, opening_balance)
 
     async def update_profile(
         self, business_id: UUID, payload: BusinessProfileUpdate
     ) -> BusinessProfileResponse:
-        business = await self.repository.get_business(business_id)
-        profile = await self.repository.get_profile(business_id)
-        if business is None or profile is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Profil usaha tidak ditemukan."
-            )
+        # Fetch everything the response needs *before* commit(): the RLS session
+        # context (see kasta_api/db/rls.py) is set per-transaction via
+        # `set_config(..., true)`, so it is cleared the moment commit() ends the
+        # transaction. Querying again afterwards (as this used to, via
+        # get_profile()) would run under `kasta_app` with no business context and
+        # find nothing.
+        business, profile, category, methods, opening_balance = await self._load_full_profile(
+            business_id
+        )
         values = payload.model_dump(exclude_unset=True)
         if "name" in values:
             business.name = values.pop("name")
-        category: BusinessCategory | None = None
         if "category_id" in values:
             category = await self._active_category(values.pop("category_id"))
             values["business_type"] = category.business_type
@@ -276,17 +286,15 @@ class BusinessService:
         for field, value in values.items():
             setattr(profile, field, value)
         await self.repository.commit()
-        return await self.get_profile(business_id)
+        return self._profile_response(business, profile, category, methods, opening_balance)
 
     async def set_logo(self, business_id: UUID, object_key: str) -> BusinessProfileResponse:
-        profile = await self.repository.get_profile(business_id)
-        if profile is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Profil usaha tidak ditemukan."
-            )
+        business, profile, category, methods, opening_balance = await self._load_full_profile(
+            business_id
+        )
         profile.logo_object_key = object_key
         await self.repository.commit()
-        return await self.get_profile(business_id)
+        return self._profile_response(business, profile, category, methods, opening_balance)
 
     async def get_logo_key(self, business_id: UUID) -> str:
         profile = await self.repository.get_profile(business_id)
@@ -419,6 +427,8 @@ class BusinessService:
             currency=profile.currency,
             timezone=profile.timezone,
             recording_method=profile.recording_method,
+            inventory_mode=profile.inventory_mode,
+            closing_frequency=profile.closing_frequency,
             status=profile.status,
             payment_methods=[method.code for method in methods],
             opening_balance=opening_balance,

@@ -51,6 +51,8 @@ class PermissionCode(StrEnum):
     NOTIFICATION_READ = "notification.read"
     NOTIFICATION_PREFERENCE_MANAGE = "notification.preference.manage"
     NOTIFICATION_GENERATE = "notification.generate"
+    CLOSING_READ = "closing.read"
+    CLOSING_CREATE = "closing.create"
 
 
 ROLE_NAMES: dict[RoleCode, str] = {
@@ -104,6 +106,8 @@ ROLE_PERMISSIONS: dict[RoleCode, frozenset[PermissionCode]] = {
             PermissionCode.NOTIFICATION_READ,
             PermissionCode.NOTIFICATION_PREFERENCE_MANAGE,
             PermissionCode.NOTIFICATION_GENERATE,
+            PermissionCode.CLOSING_READ,
+            PermissionCode.CLOSING_CREATE,
         }
     ),
     RoleCode.BUSINESS_STAFF: frozenset(
@@ -131,6 +135,7 @@ ROLE_PERMISSIONS: dict[RoleCode, frozenset[PermissionCode]] = {
             PermissionCode.NOTIFICATION_READ,
             PermissionCode.NOTIFICATION_PREFERENCE_MANAGE,
             PermissionCode.NOTIFICATION_GENERATE,
+            PermissionCode.CLOSING_READ,
         }
     ),
     RoleCode.MENTOR: frozenset(
@@ -153,6 +158,7 @@ ROLE_PERMISSIONS: dict[RoleCode, frozenset[PermissionCode]] = {
             PermissionCode.PAYABLE_READ,
             PermissionCode.NOTIFICATION_READ,
             PermissionCode.NOTIFICATION_PREFERENCE_MANAGE,
+            PermissionCode.CLOSING_READ,
         }
     ),
     RoleCode.ORGANIZATION_ADMIN: frozenset(
@@ -178,6 +184,7 @@ ROLE_PERMISSIONS: dict[RoleCode, frozenset[PermissionCode]] = {
             PermissionCode.PAYABLE_READ,
             PermissionCode.NOTIFICATION_READ,
             PermissionCode.NOTIFICATION_PREFERENCE_MANAGE,
+            PermissionCode.CLOSING_READ,
         }
     ),
     RoleCode.SUPER_ADMIN: frozenset(PermissionCode),

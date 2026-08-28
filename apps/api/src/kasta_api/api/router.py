@@ -4,6 +4,7 @@ from kasta_api.api.routes import health
 from kasta_api.modules.accounting import router as accounting
 from kasta_api.modules.auth import router as auth
 from kasta_api.modules.businesses import router as businesses
+from kasta_api.modules.closing import router as closing
 from kasta_api.modules.inventory import router as inventory
 from kasta_api.modules.mentors.access_router import (
     business_access_router,
@@ -29,6 +30,7 @@ api_router.include_router(transactions, tags=["transactions"])
 api_router.include_router(ocr, tags=["ocr"])
 api_router.include_router(privacy, tags=["privacy"])
 api_router.include_router(obligations)
+api_router.include_router(closing, tags=["closing"])
 api_router.include_router(reports, tags=["reports"])
 api_router.include_router(sync.router)
 api_router.include_router(mentors)

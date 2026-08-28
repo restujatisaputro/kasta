@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import calendar
 from datetime import UTC, date, datetime
+from decimal import Decimal
 from uuid import UUID, uuid4
 
 from fastapi import HTTPException, UploadFile
 
-from kasta_api.modules.accounting.constants import AccountKey
-from kasta_api.modules.accounting.engine import round_money
+from kasta_api.modules.accounting.constants import AccountKey, TransactionType
+from kasta_api.modules.accounting.engine import TransactionCommand, round_money
 from kasta_api.modules.accounting.repository import AccountingRepository
 from kasta_api.modules.accounting.schemas import TransactionResponse
 from kasta_api.modules.accounting.service import JournalService
@@ -90,6 +91,19 @@ class SimpleTransactionService:
                     else None
                 ),
             )
+        inventory_mode = await self.repository.get_inventory_mode(business_id)
+        if (
+            inventory_mode == "PERPETUAL"
+            and payload.entry_kind in {EntryKind.INCOME, EntryKind.EXPENSE}
+            and not payload.items
+        ):
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "Usaha ini memakai pencatatan detail (perpetual): pilih produk dan "
+                    "jumlahnya untuk transaksi ini."
+                ),
+            )
         rule = self._new_recurring_rule(business_id, actor_user_id, payload)
         if rule is not None:
             self.repository.add(rule)
@@ -104,13 +118,36 @@ class SimpleTransactionService:
                 request_id=request_id,
                 auto_commit=False,
             )
-            await self.inventory.apply_transaction_lines(
+            movements = await self.inventory.apply_transaction_lines(
                 business_id,
                 transaction.id,
                 actor_user_id,
                 payload.entry_kind.value,
                 payload.items,
             )
+            if inventory_mode == "PERPETUAL" and payload.entry_kind == EntryKind.INCOME and movements:
+                # Perpetual inventory: recognise the cost of what was just sold immediately,
+                # as its own linked posting (debit COGS / credit Inventory) rather than
+                # folding it into the sale's own two-line entry. Known limitation: reversing
+                # or revising this sale does not currently reverse this COGS posting too.
+                cogs_amount = sum(
+                    (movement.total_cost for movement in movements), Decimal("0.00")
+                )
+                if cogs_amount > 0:
+                    await self.journal.post_transaction(
+                        business_id,
+                        actor_user_id,
+                        TransactionCommand(
+                            transaction_type=TransactionType.COGS_POSTING,
+                            amount=cogs_amount,
+                            transaction_date=payload.transaction_date,
+                            description=f"HPP untuk {transaction.transaction_number}",
+                            idempotency_key=f"cogs:{transaction.id}",
+                            entry_kind="EXPENSE",
+                        ),
+                        request_id=request_id,
+                        auto_commit=False,
+                    )
             await self.repository.commit()
         except Exception:
             await self.repository.rollback()

@@ -16,6 +16,8 @@ BusinessScale = Literal["MICRO", "SMALL", "MEDIUM"]
 Currency = Literal["IDR", "USD", "SGD", "MYR"]
 Timezone = Literal["Asia/Jakarta", "Asia/Makassar", "Asia/Jayapura"]
 RecordingMethod = Literal["CASH", "ACCRUAL"]
+InventoryMode = Literal["SIMPLE", "PERPETUAL"]
+ClosingFrequency = Literal["MONTHLY", "SEMIANNUAL", "TRIANNUAL"]
 PaymentMethodCode = Literal["CASH", "BANK_TRANSFER", "QRIS", "E_WALLET", "CARD"]
 ShortText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 
@@ -86,6 +88,8 @@ class BusinessProfileUpdate(BaseModel):
     currency: Currency | None = None
     timezone: Timezone | None = None
     recording_method: RecordingMethod | None = None
+    inventory_mode: InventoryMode | None = None
+    closing_frequency: ClosingFrequency | None = None
     status: Literal["ACTIVE", "INACTIVE"] | None = None
     has_products_and_stock: bool | None = None
 
@@ -110,6 +114,8 @@ class BusinessProfileResponse(BaseModel):
     currency: Currency
     timezone: Timezone
     recording_method: RecordingMethod
+    inventory_mode: InventoryMode
+    closing_frequency: ClosingFrequency
     status: str
     payment_methods: list[PaymentMethodCode]
     opening_balance: Decimal

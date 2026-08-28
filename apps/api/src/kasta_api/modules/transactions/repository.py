@@ -5,6 +5,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from kasta_api.modules.accounting.models import FinancialTransaction
+from kasta_api.modules.businesses.models import BusinessProfile
 from kasta_api.modules.receipts.models import ReceiptImage
 from kasta_api.modules.transactions.models import (
     RecurringTransaction,
@@ -31,6 +32,14 @@ class TransactionRepository:
 
     async def refresh(self, instance: object) -> None:
         await self.session.refresh(instance)
+
+    async def get_inventory_mode(self, business_id: UUID) -> str:
+        mode = await self.session.scalar(
+            select(BusinessProfile.inventory_mode).where(
+                BusinessProfile.business_id == business_id
+            )
+        )
+        return mode or "SIMPLE"
 
     async def get_draft(self, business_id: UUID, draft_id: UUID) -> TransactionDraft | None:
         return (
