@@ -4,7 +4,8 @@ FROM python:3.14.6-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/opt/kasta
 
 WORKDIR /build
 COPY --from=uv /uv /uvx /bin/
@@ -21,7 +22,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 RUN groupadd --system kasta && useradd --system --gid kasta --home-dir /opt/kasta kasta
 WORKDIR /opt/kasta
-COPY --from=builder --chown=kasta:kasta /build/.venv /opt/kasta
+COPY --from=builder --chown=kasta:kasta /opt/kasta /opt/kasta
 COPY --chown=kasta:kasta apps/api/alembic.ini ./alembic.ini
 COPY --chown=kasta:kasta apps/api/migrations ./migrations
 

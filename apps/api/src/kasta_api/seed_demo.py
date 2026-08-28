@@ -77,6 +77,10 @@ from kasta_api.modules.obligations.models import (
     Supplier,
 )
 from kasta_api.modules.receipts.models import OcrField, OcrResult, Receipt, ReceiptImage
+# Imported so SQLAlchemy registers RecurringTransaction's mapper: FinancialTransaction's
+# recurring_rule_id FK targets it, and the ORM dependency sort needs every mapper
+# configured up front even though this module seeds no recurring transactions itself.
+from kasta_api.modules.transactions import models as _transactions_models  # noqa: F401
 from kasta_api.modules.users.models import User
 
 DEMO_NAMESPACE = UUID("3a4b3a9d-b4b4-4b63-8b7f-ec8b1bbbc4e1")
