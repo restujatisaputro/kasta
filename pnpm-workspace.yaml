@@ -7,6 +7,9 @@ allowBuilds:
   core-js: false
   esbuild: true
   protobufjs: false
+  # postinstall is only an opencollective funding banner (`opencollective-postinstall || true`);
+  # the WASM core it ships (tesseract.js-core) has no build step of its own.
+  tesseract.js: false
 
 minimumReleaseAgeExclude:
   - js-yaml@4.3.0
