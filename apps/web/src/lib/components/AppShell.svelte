@@ -23,6 +23,7 @@
     { slug: 'utang', label: 'Utang', icon: 'payable' },
     { slug: 'piutang', label: 'Piutang', icon: 'receivable' },
     { slug: 'laporan', label: 'Laporan', icon: 'chart' },
+    { slug: 'tutup-buku', label: 'Tutup Buku', icon: 'calendar' },
     { slug: 'pembina', label: 'Pembina', icon: 'mentor' },
     { slug: 'anggota', label: 'Anggota usaha', icon: 'users' },
     { slug: 'profil', label: 'Profil', icon: 'profile' },

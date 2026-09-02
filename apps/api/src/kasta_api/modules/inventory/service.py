@@ -394,9 +394,9 @@ class InventoryService:
         lines: Sequence[InventoryLine],
         *,
         revision: bool = False,
-    ) -> None:
+    ) -> list[StockMovement]:
         if not lines:
-            return
+            return []
         if entry_kind not in {"INCOME", "EXPENSE"}:
             raise HTTPException(
                 status_code=422, detail="Produk hanya untuk penjualan atau pembelian."
@@ -405,7 +405,8 @@ class InventoryService:
         products = await self.repository.lock_products(business_id, product_ids)
         if len(products) != len(product_ids):
             raise HTTPException(status_code=404, detail="Salah satu produk tidak ditemukan.")
-        records: list[object] = []
+        items: list[TransactionItem] = []
+        movements: list[StockMovement] = []
         for line in lines:
             product = products[line.product_id]
             if not product.is_active:
@@ -449,9 +450,17 @@ class InventoryService:
                 transaction_id=transaction_id,
                 transaction_item_id=item.id,
             )
-            records.extend((item, movement))
-        self.repository.add_all(records)
+            items.append(item)
+            movements.append(movement)
+        # Insert transaction_items before stock_movements: the latter's
+        # transaction_item_id FK must reference an already-persisted row, and
+        # SQLAlchemy has no relationship() between these two mappers to infer
+        # that ordering on its own within a single flush.
+        self.repository.add_all(items)
         await self.repository.flush()
+        self.repository.add_all(movements)
+        await self.repository.flush()
+        return movements
 
     async def reverse_transaction_lines(
         self,

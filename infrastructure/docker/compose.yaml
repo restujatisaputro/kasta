@@ -88,9 +88,10 @@ services:
     volumes:
       - ../../scripts/postgres/configure-runtime-role.sql:/scripts/configure-runtime-role.sql:ro
     entrypoint: [/bin/sh, -c]
-    command: >-
-      PGPASSWORD="$${POSTGRES_PASSWORD}" psql -h postgres -U "$${POSTGRES_USER}"
-      -d "$${POSTGRES_DB}" -v ON_ERROR_STOP=1 -f /scripts/configure-runtime-role.sql
+    command:
+      - >-
+        PGPASSWORD="$${POSTGRES_PASSWORD}" psql -h postgres -U "$${POSTGRES_USER}"
+        -d "$${POSTGRES_DB}" -v ON_ERROR_STOP=1 -f /scripts/configure-runtime-role.sql
     depends_on:
       migrate:
         condition: service_completed_successfully

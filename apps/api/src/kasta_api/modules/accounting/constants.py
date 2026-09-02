@@ -39,6 +39,7 @@ class AccountKey(StrEnum):
     PROMOTION = "PROMOTION"
     ADMINISTRATION = "ADMINISTRATION"
     OTHER_EXPENSE = "OTHER_EXPENSE"
+    COGS = "COGS"
 
 
 class TransactionType(StrEnum):
@@ -52,6 +53,8 @@ class TransactionType(StrEnum):
     PAYABLE_PAYMENT = "PAYABLE_PAYMENT"
     RECEIVABLE_RECEIPT = "RECEIVABLE_RECEIPT"
     OPERATING_EXPENSE = "OPERATING_EXPENSE"
+    COGS_POSTING = "COGS_POSTING"
+    PERIOD_CLOSING = "PERIOD_CLOSING"
 
 
 POSTED_TRANSACTION_TYPES = (*tuple(item.value for item in TransactionType), "REVERSAL")

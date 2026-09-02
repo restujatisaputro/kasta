@@ -63,13 +63,18 @@ class ReportService:
         category = category.strip().upper() if category else None
         payment_method = payment_method.strip().upper() if payment_method else None
 
-        period_rows = await self.repository.ledger_rows(
-            business_id,
-            date_from=start,
-            date_to=end,
-            category=category,
-            payment_method=payment_method,
+        period_rows = self._exclude_closing(
+            await self.repository.ledger_rows(
+                business_id,
+                date_from=start,
+                date_to=end,
+                category=category,
+                payment_method=payment_method,
+            )
         )
+        # Kept as-is (closing entries included): the balance sheet's running-earnings
+        # line relies on the closing entry's offsetting debit to net a closed period's
+        # revenue/expense back to zero in this all-time sum — see _balance_sheet().
         cumulative_rows = await self.repository.ledger_rows(
             business_id,
             date_from=None,
@@ -78,12 +83,14 @@ class ReportService:
             payment_method=payment_method,
         )
         comparison_start = self._shift_month(self._month_start(end), -5)
-        comparison_rows = await self.repository.ledger_rows(
-            business_id,
-            date_from=comparison_start,
-            date_to=end,
-            category=category,
-            payment_method=payment_method,
+        comparison_rows = self._exclude_closing(
+            await self.repository.ledger_rows(
+                business_id,
+                date_from=comparison_start,
+                date_to=end,
+                category=category,
+                payment_method=payment_method,
+            )
         )
         products = await self.repository.products(business_id)
         product_sales = await self.repository.product_sales(
@@ -404,6 +411,20 @@ class ReportService:
                 "dicatat sebagai biaya."
             ),
         )
+
+    @staticmethod
+    def _exclude_closing(rows: list[LedgerRow]) -> list[LedgerRow]:
+        """Drops period-closing journal lines from a window-scoped view.
+
+        A closing entry offsets a *closed* period's revenue/expense accounts
+        with a debit/credit dated at that period's end — real bookkeeping, but
+        not new activity for whatever calendar window (this month, this week,
+        …) happens to contain that date. Left in, it reads as a huge swing in
+        that window's own income/expense instead of the reclassification into
+        equity it actually is. The all-time cumulative view keeps these rows;
+        see the comment at its call site in build().
+        """
+        return [row for row in rows if row.transaction_type != "PERIOD_CLOSING"]
 
     @staticmethod
     def _cash_movement(rows: list[LedgerRow]) -> tuple[Decimal, Decimal]:

@@ -55,15 +55,16 @@ async def test_account_templates_are_complete_and_tenant_scoped(
 
     assert response.status_code == 200
     accounts = response.json()
-    assert len(accounts) == 24
+    assert len(accounts) == 25
     assert {item["name"] for item in accounts} >= {
         "Kas",
         "Utang Usaha",
         "Modal Pemilik",
         "Penjualan",
         "Beban Lain",
+        "Harga Pokok Penjualan",
     }
-    assert len({item["system_key"] for item in accounts}) == 24
+    assert len({item["system_key"] for item in accounts}) == 25
 
     other_tenant = await auth_environment.client.get(
         f"/api/v1/businesses/{auth_environment.business_b_id}/accounting/accounts",

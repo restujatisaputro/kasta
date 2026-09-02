@@ -131,6 +131,13 @@ ACCOUNT_TEMPLATES = (
         AccountType.EXPENSE,
         NormalBalance.DEBIT,
     ),
+    AccountTemplate(
+        AccountKey.COGS,
+        "5001",
+        "Harga Pokok Penjualan",
+        AccountType.EXPENSE,
+        NormalBalance.DEBIT,
+    ),
 )
 
 ACCOUNT_TEMPLATE_BY_KEY = {template.key: template for template in ACCOUNT_TEMPLATES}

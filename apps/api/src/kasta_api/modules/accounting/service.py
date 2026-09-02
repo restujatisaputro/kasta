@@ -65,6 +65,63 @@ class JournalService:
             await self.repository.rollback()
             raise
 
+    async def post_multi_line_transaction(
+        self,
+        business_id: UUID,
+        actor_user_id: UUID,
+        *,
+        transaction_type: TransactionType,
+        transaction_date: date,
+        description: str,
+        lines: list[JournalLineDraft],
+        idempotency_key: str,
+        entry_kind: str | None = None,
+        request_id: str | None = None,
+        auto_commit: bool = True,
+    ) -> FinancialTransaction:
+        """Posts a transaction whose journal entry has more than one debit/credit pair.
+
+        Used for period closing, where every revenue/expense account with
+        activity in the period needs its own line alongside the equity line —
+        something the normal single-pair `TransactionCommand` flow can't express.
+        """
+        existing = await self.repository.get_by_idempotency_key(business_id, idempotency_key)
+        if existing is not None:
+            return existing
+        total_debit = sum((line.debit_amount for line in lines), Decimal("0.00"))
+        total_credit = sum((line.credit_amount for line in lines), Decimal("0.00"))
+        draft = JournalDraft(
+            lines=tuple(lines), total_debit=total_debit, total_credit=total_credit
+        )
+        try:
+            JournalValidator.validate(draft)
+            command = TransactionCommand(
+                transaction_type=transaction_type,
+                amount=total_debit,
+                transaction_date=transaction_date,
+                description=description,
+                idempotency_key=idempotency_key,
+                entry_kind=entry_kind,
+            )
+            transaction = await self._create_posted_transaction(
+                business_id,
+                actor_user_id,
+                command,
+                request_id=request_id,
+                draft=draft,
+            )
+            if auto_commit:
+                await self.repository.commit()
+            return transaction
+        except AccountingValidationError as exc:
+            await self.repository.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)
+            ) from exc
+        except Exception:
+            await self.repository.rollback()
+            raise
+
     async def reverse_transaction(
         self,
         business_id: UUID,
@@ -173,8 +230,14 @@ class JournalService:
         root_transaction_id: UUID | None = None,
         supersedes_transaction_id: UUID | None = None,
         audit_action: str = "TRANSACTION_POSTED",
+        draft: JournalDraft | None = None,
     ) -> FinancialTransaction:
-        draft = self.engine.create_draft(command)
+        # A pre-built draft (currently only period-closing entries) skips the
+        # engine's single debit/credit-pair resolution: closing needs one line
+        # per revenue/expense account plus the equity line, which resolve_rule
+        # has no notion of.
+        if draft is None:
+            draft = self.engine.create_draft(command)
         accounts = await self.repository.ensure_account_templates(business_id)
         self._validate_accounts(draft, accounts, business_id)
         now = utc_now()
@@ -349,6 +412,13 @@ class JournalService:
                 total_credit=reversal_entry.total_credit,
             )
         )
+        # Insert the reversal row before pointing `original.reversed_by_transaction_id`
+        # at it: both rows live in the same `transactions` table and SQLAlchemy has no
+        # explicit relationship() to infer that the update depends on this insert, so an
+        # unflushed self-referential FK can otherwise be ordered before its target row
+        # exists and fail with a ForeignKeyViolation.
+        self.repository.add_all([reversal, reversal_entry, *reversal_lines])
+        await self.repository.flush()
         original.status = "REVERSED"
         original.reversed_by_transaction_id = reversal.id
         entry.status = "REVERSED"
@@ -357,9 +427,6 @@ class JournalService:
         reversal_snapshot = self._snapshot(reversal)
         self.repository.add_all(
             [
-                reversal,
-                reversal_entry,
-                *reversal_lines,
                 TransactionRevision(
                     id=uuid4(),
                     business_id=original.business_id,

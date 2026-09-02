@@ -80,7 +80,6 @@ class ObligationService:
         self.repository.add(party)
         try:
             await self.repository.commit()
-            await self.repository.refresh(party)
         except Exception:
             await self.repository.rollback()
             raise
@@ -163,7 +162,6 @@ class ObligationService:
                 ]
             )
             await self.repository.commit()
-            await self.repository.refresh(obligation)
         except Exception:
             await self.repository.rollback()
             raise
@@ -245,6 +243,7 @@ class ObligationService:
             )
         receivable = kind == ObligationKind.RECEIVABLE
         party = await self._party_for(obligation, kind)
+        existing_payments = await self._payments(business_id, obligation.id, kind)
         payment_id = uuid4()
         transaction_type = (
             TransactionType.RECEIVABLE_RECEIPT if receivable else TransactionType.PAYABLE_PAYMENT
@@ -293,6 +292,13 @@ class ObligationService:
             obligation.status = self._status(
                 obligation.paid_amount, obligation.remaining_amount, obligation.due_date
             ).value
+            # Set explicitly (rather than relying on the column's server-side `onupdate`)
+            # so the in-memory object stays valid to read after commit without a refresh:
+            # refreshing would re-SELECT under a fresh transaction where the RLS session
+            # context (transaction-local via set_config(..., true)) has already been
+            # reset by the commit, hiding the row from `kasta_app` and raising
+            # InvalidRequestError. See also the `cancel` method below.
+            obligation.updated_at = now
             self.repository.add_all(
                 [
                     payment,
@@ -313,11 +319,17 @@ class ObligationService:
                 ]
             )
             await self.repository.commit()
-            await self.repository.refresh(obligation)
         except Exception:
             await self.repository.rollback()
             raise
-        return await self.detail(business_id, obligation.id, kind=kind)
+        all_payments = sorted(
+            [*existing_payments, payment],
+            key=lambda row: (row.payment_date, row.created_at),
+        )
+        return ObligationDetailResponse(
+            **self._response(obligation, party, kind).model_dump(),
+            payments=[PaymentResponse.model_validate(row) for row in all_payments],
+        )
 
     async def cancel(
         self,
@@ -353,6 +365,7 @@ class ObligationService:
             obligation.cancelled_at = utc_now()
             obligation.cancelled_by_user_id = actor_user_id
             obligation.cancellation_reason = payload.reason
+            obligation.updated_at = obligation.cancelled_at
             self.repository.add(
                 self._audit(
                     business_id,
@@ -368,7 +381,6 @@ class ObligationService:
                 )
             )
             await self.repository.commit()
-            await self.repository.refresh(obligation)
         except Exception:
             await self.repository.rollback()
             raise

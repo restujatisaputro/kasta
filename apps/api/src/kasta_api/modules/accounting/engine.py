@@ -117,6 +117,8 @@ class JournalEngine:
             if payment_account not in OPERATING_PAYMENT_KEYS:
                 raise AccountingValidationError("Pilih Kas atau Bank sebagai tempat penerimaan.")
             return payment_account, AccountKey.RECEIVABLE
+        if transaction_type == TransactionType.COGS_POSTING:
+            return AccountKey.COGS, AccountKey.INVENTORY
         if transaction_type == TransactionType.OPERATING_EXPENSE:
             if command.category_account not in EXPENSE_ACCOUNT_KEYS:
                 raise AccountingValidationError("Pilih kategori pengeluaran usaha.")
