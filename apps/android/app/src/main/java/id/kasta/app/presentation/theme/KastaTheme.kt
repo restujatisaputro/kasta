@@ -7,31 +7,32 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val KastaGreen = Color(0xFF166534)
-private val KastaGreenLight = Color(0xFFDCFCE7)
+private val KastaTeal = Color(0xFF31574F)
+private val KastaSage = Color(0xFFE5EEE8)
+private val KastaGold = Color(0xFFC5A476)
 private val LightColors =
     lightColorScheme(
-        primary = KastaGreen,
+        primary = KastaTeal,
         onPrimary = Color.White,
-        primaryContainer = KastaGreenLight,
-        onPrimaryContainer = Color(0xFF052E16),
-        secondary = Color(0xFF0F766E),
-        tertiary = Color(0xFFD97706),
-        background = Color(0xFFF7F9F6),
-        surface = Color.White,
-        surfaceVariant = Color(0xFFEEF2EC),
+        primaryContainer = KastaSage,
+        onPrimaryContainer = Color(0xFF1D3835),
+        secondary = Color(0xFF64877B),
+        tertiary = KastaGold,
+        background = Color(0xFFF8F8F4),
+        surface = Color(0xFFFFFEFA),
+        surfaceVariant = Color(0xFFEEF2ED),
     )
 
 private val DarkColors =
     darkColorScheme(
-        primary = Color(0xFF86EFAC),
-        onPrimary = Color(0xFF052E16),
-        primaryContainer = Color(0xFF14532D),
-        secondary = Color(0xFF5EEAD4),
-        tertiary = Color(0xFFFCD34D),
-        background = Color(0xFF0C1410),
-        surface = Color(0xFF121C16),
-        surfaceVariant = Color(0xFF1E2A22),
+        primary = Color(0xFFB2C9BD),
+        onPrimary = Color(0xFF1D3835),
+        primaryContainer = Color(0xFF24423C),
+        secondary = Color(0xFF8FB0A3),
+        tertiary = Color(0xFFD4B887),
+        background = Color(0xFF101B18),
+        surface = Color(0xFF172622),
+        surfaceVariant = Color(0xFF223630),
     )
 
 @Composable

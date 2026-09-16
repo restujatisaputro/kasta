@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import BrandLogo from './BrandLogo.svelte';
   import MarketingShell from './MarketingShell.svelte';
 
   interface Props {
@@ -18,7 +19,8 @@
     ></div>
     <div class="relative mx-auto max-w-md">
       <div class="mb-7 text-center">
-        <p class="text-sm font-extrabold text-kasta-700 dark:text-kasta-300">KASTA</p>
+        <div class="mb-5 flex justify-center"><BrandLogo compact /></div>
+        <div class="mx-auto kasta-gold-rule"></div>
         <h1 class="mt-2 text-3xl font-black tracking-tight">{title}</h1>
         <p class="mt-2 leading-7 text-[var(--text-muted)]">{description}</p>
       </div>

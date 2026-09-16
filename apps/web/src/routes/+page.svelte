@@ -1,6 +1,7 @@
 <script lang="ts">
   import Button from '$lib/components/Button.svelte';
   import Card from '$lib/components/Card.svelte';
+  import BrandLogo from '$lib/components/BrandLogo.svelte';
   import Icon, { type IconName } from '$lib/components/Icon.svelte';
   import MarketingShell from '$lib/components/MarketingShell.svelte';
 
@@ -49,14 +50,12 @@
 </svelte:head>
 
 <MarketingShell>
-  <section class="relative overflow-hidden px-5 py-16 sm:px-6 sm:py-24">
-    <div
-      class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_85%_10%,#b3e6ca,transparent_28%),radial-gradient(circle_at_10%_70%,#ffe3c6,transparent_24%),linear-gradient(135deg,#fffaf0_0%,#f2fbf5_55%,#e5f5e9_100%)] opacity-90 dark:opacity-15"
-    ></div>
+  <section class="kasta-brand-hero relative overflow-hidden px-5 py-16 sm:px-6 sm:py-24">
     <div class="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.08fr_.92fr]">
       <div>
+        <div class="mb-8 lg:hidden"><BrandLogo context="Keuangan dan Asistensi UMKM" /></div>
         <div
-          class="inline-flex items-center gap-2 rounded-full border border-kasta-200 bg-kasta-50 px-3 py-1.5 text-xs font-extrabold text-kasta-800"
+          class="inline-flex items-center gap-2 rounded-full border border-kasta-200 bg-[color:var(--surface)]/80 px-3 py-1.5 text-xs font-extrabold text-kasta-800 shadow-sm backdrop-blur"
         >
           <span class="h-2 w-2 rounded-full bg-kasta-500"></span>Dibuat untuk UMKM Indonesia
         </div>
@@ -104,7 +103,7 @@
             </p>
           </div>
         </div>
-        <div class="kasta-card relative -mt-12 overflow-hidden p-4 sm:-mt-16 sm:ml-8 sm:p-6">
+        <div class="kasta-card kasta-hero-card relative -mt-12 overflow-hidden p-4 sm:-mt-16 sm:ml-8 sm:p-6">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs font-bold text-[var(--text-muted)]">Ringkasan bulan ini</p>
@@ -204,11 +203,11 @@
         jurnal secara otomatis.
       </p>
     </div>
-    <div class="mx-auto mt-9 grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="motion-stagger mx-auto mt-9 grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {#each features as feature (feature.title)}
         <Card class="group transition duration-200 hover:-translate-y-1 hover:shadow-xl"
           ><div
-            class="grid h-11 w-11 place-items-center rounded-xl bg-kasta-100 text-kasta-800 transition group-hover:scale-110 dark:bg-kasta-950 dark:text-kasta-200"
+            class="kasta-icon-wrap grid h-11 w-11 place-items-center rounded-xl bg-kasta-100 text-kasta-800 dark:bg-kasta-950 dark:text-kasta-200"
           >
             <Icon name={feature.icon} />
           </div>
@@ -231,7 +230,7 @@
           jelas.
         </p>
       </div>
-      <ol class="grid gap-3">
+      <ol class="motion-stagger grid gap-3">
         {#each [['1', 'Buat profil usaha', 'Isi informasi dasar dan saldo awal usaha.'], ['2', 'Catat kegiatan harian', 'Gunakan Uang Masuk, Uang Keluar, atau Foto Nota.'], ['3', 'Lihat perkembangan', 'Baca laporan sederhana atau bahas bersama pembina.']] as step (step[0])}
           <li class="kasta-card flex gap-4 p-4">
             <span

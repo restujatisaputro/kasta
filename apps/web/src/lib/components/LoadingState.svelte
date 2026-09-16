@@ -12,7 +12,7 @@
     {#each Array(rows)
       .fill(0)
       .map((value, index) => value + index) as index (index)}
-      <div class="h-20 animate-pulse rounded-2xl bg-[var(--surface-muted)]"></div>
+      <div class="kasta-skeleton h-20 rounded-2xl bg-[var(--surface-muted)]"></div>
     {/each}
   </div>
 </div>

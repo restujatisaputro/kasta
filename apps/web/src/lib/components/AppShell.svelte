@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import type { Snippet } from 'svelte';
+  import BrandLogo from './BrandLogo.svelte';
   import DarkModeToggle from './DarkModeToggle.svelte';
   import Icon, { type IconName } from './Icon.svelte';
   import NotificationBell from './NotificationBell.svelte';
@@ -23,7 +24,6 @@
     { slug: 'utang', label: 'Utang', icon: 'payable' },
     { slug: 'piutang', label: 'Piutang', icon: 'receivable' },
     { slug: 'laporan', label: 'Laporan', icon: 'chart' },
-    { slug: 'tutup-buku', label: 'Tutup Buku', icon: 'calendar' },
     { slug: 'pembina', label: 'Pembina', icon: 'mentor' },
     { slug: 'anggota', label: 'Anggota usaha', icon: 'users' },
     { slug: 'profil', label: 'Profil', icon: 'profile' },
@@ -53,28 +53,15 @@
   <aside
     class="fixed inset-y-0 left-0 z-30 hidden w-68 border-r border-[var(--border)] bg-[var(--surface)] lg:flex lg:flex-col"
   >
-    <a href="/" class="flex h-18 items-center gap-3 border-b border-[var(--border)] px-5">
-      <span
-        class="relative grid h-10 w-14 place-items-center overflow-hidden rounded-xl border border-[#eadfc8] bg-[#fff8e7]"
-      >
-        <img
-          src="/images/kasta-logo.png"
-          alt=""
-          class="absolute left-1/2 top-1/2 w-[300%] max-w-none -translate-x-1/2 -translate-y-1/2"
-        />
-      </span>
-      <span
-        ><strong class="block text-lg leading-5">KASTA</strong><small
-          class="text-[11px] text-[var(--text-muted)]">Ruang usaha</small
-        ></span
-      >
-    </a>
+    <div class="flex h-18 items-center border-b border-[var(--border)] px-5">
+      <BrandLogo context="Ruang usaha" />
+    </div>
     <nav class="flex-1 overflow-y-auto p-3" aria-label="Menu UMKM">
       {#each navigation as item (item.slug)}
         <a
           href={href(item.slug)}
           aria-current={active(item.slug) ? 'page' : undefined}
-          class="mb-1 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold transition {active(
+          class="kasta-nav-link mb-1 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold transition {active(
             item.slug,
           )
             ? 'bg-kasta-100 text-kasta-900 dark:bg-kasta-950 dark:text-kasta-100'
