@@ -17,7 +17,9 @@ from kasta_api.modules.closing.schemas import (
 router = APIRouter(prefix="/businesses/{business_id}/closing")
 
 ClosingRead = Annotated[CurrentPrincipal, Depends(require_permission(PermissionCode.CLOSING_READ))]
-ClosingWrite = Annotated[CurrentPrincipal, Depends(require_permission(PermissionCode.CLOSING_CREATE))]
+ClosingWrite = Annotated[
+    CurrentPrincipal, Depends(require_permission(PermissionCode.CLOSING_CREATE))
+]
 
 
 def _request_id(request: Request) -> str | None:

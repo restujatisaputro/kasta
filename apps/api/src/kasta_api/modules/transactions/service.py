@@ -125,14 +125,16 @@ class SimpleTransactionService:
                 payload.entry_kind.value,
                 payload.items,
             )
-            if inventory_mode == "PERPETUAL" and payload.entry_kind == EntryKind.INCOME and movements:
+            if (
+                inventory_mode == "PERPETUAL"
+                and payload.entry_kind == EntryKind.INCOME
+                and movements
+            ):
                 # Perpetual inventory: recognise the cost of what was just sold immediately,
                 # as its own linked posting (debit COGS / credit Inventory) rather than
                 # folding it into the sale's own two-line entry. Known limitation: reversing
                 # or revising this sale does not currently reverse this COGS posting too.
-                cogs_amount = sum(
-                    (movement.total_cost for movement in movements), Decimal("0.00")
-                )
+                cogs_amount = sum((movement.total_cost for movement in movements), Decimal("0.00"))
                 if cogs_amount > 0:
                     await self.journal.post_transaction(
                         business_id,

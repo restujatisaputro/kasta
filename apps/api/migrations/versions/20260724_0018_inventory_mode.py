@@ -19,9 +19,7 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     op.add_column(
         "business_profiles",
-        sa.Column(
-            "inventory_mode", sa.String(length=20), nullable=False, server_default="SIMPLE"
-        ),
+        sa.Column("inventory_mode", sa.String(length=20), nullable=False, server_default="SIMPLE"),
     )
     op.create_check_constraint(
         "business_inventory_mode",

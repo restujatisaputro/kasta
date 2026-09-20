@@ -35,9 +35,7 @@ class TransactionRepository:
 
     async def get_inventory_mode(self, business_id: UUID) -> str:
         mode = await self.session.scalar(
-            select(BusinessProfile.inventory_mode).where(
-                BusinessProfile.business_id == business_id
-            )
+            select(BusinessProfile.inventory_mode).where(BusinessProfile.business_id == business_id)
         )
         return mode or "SIMPLE"
 

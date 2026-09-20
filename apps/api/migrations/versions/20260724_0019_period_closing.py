@@ -96,9 +96,7 @@ def upgrade() -> None:
             "total_revenue >= 0 AND total_expense >= 0", name="period_closing_non_negative"
         ),
     )
-    op.create_index(
-        "ix_period_closings_business_id", "period_closings", ["business_id"]
-    )
+    op.create_index("ix_period_closings_business_id", "period_closings", ["business_id"])
     op.create_index(
         "ix_period_closings_business_end", "period_closings", ["business_id", "period_end"]
     )

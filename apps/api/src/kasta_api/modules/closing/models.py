@@ -2,7 +2,16 @@ from datetime import date
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, Date, ForeignKey, Index, Numeric, String, UniqueConstraint, Uuid
+from sqlalchemy import (
+    CheckConstraint,
+    Date,
+    ForeignKey,
+    Index,
+    Numeric,
+    String,
+    UniqueConstraint,
+    Uuid,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from kasta_api.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin

@@ -37,7 +37,9 @@ class ClosingService:
         self.reports = report_repository
         self.journal = JournalService(accounting_repository)
 
-    async def current_period(self, business_id: UUID, as_of: date | None = None) -> CurrentPeriodResponse:
+    async def current_period(
+        self, business_id: UUID, as_of: date | None = None
+    ) -> CurrentPeriodResponse:
         as_of = as_of or date.today()
         frequency = ClosingFrequency(await self.repository.get_closing_frequency(business_id))
         period_start = await self._next_period_start(business_id)
@@ -109,7 +111,9 @@ class ClosingService:
         lines, total_revenue, total_expense = _closing_lines(rows)
         net_profit = _money(total_revenue - total_expense)
         if net_profit > ZERO:
-            lines.append(JournalLineDraft(account_key=AccountKey.OWNER_CAPITAL, credit_amount=net_profit))
+            lines.append(
+                JournalLineDraft(account_key=AccountKey.OWNER_CAPITAL, credit_amount=net_profit)
+            )
         elif net_profit < ZERO:
             lines.append(
                 JournalLineDraft(account_key=AccountKey.OWNER_CAPITAL, debit_amount=-net_profit)
@@ -265,7 +269,11 @@ def _rupiah(value: Decimal) -> str:
 
 
 def _explanation(
-    period_start: date, as_of: date, total_revenue: Decimal, total_expense: Decimal, net_profit: Decimal
+    period_start: date,
+    as_of: date,
+    total_revenue: Decimal,
+    total_expense: Decimal,
+    net_profit: Decimal,
 ) -> str:
     result = "laba" if net_profit >= ZERO else "rugi"
     return (
