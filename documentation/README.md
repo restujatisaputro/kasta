@@ -24,6 +24,7 @@ Direktori ini adalah indeks dokumentasi yang hidup bersama kode.
 | [`testing/`](testing/)                               | Strategi QA, test case, traceability, dan hasil aktual   |
 | [`demo-data.md`](demo-data.md)                       | Seed demo fiktif, akun sementara, dan cara menjalankan   |
 | [`deployment.md`](deployment.md)                     | Compose production, HTTPS, backup, restore, dan rollback |
+| [`whatsapp-setup.md`](whatsapp-setup.md)             | Cloud API Meta, template OTP, nomor tes, dan kode error  |
 
 Dokumen sumber yang sudah ada tetap dipertahankan di root repository:
 
