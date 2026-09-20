@@ -8,7 +8,7 @@ di luar repository, lalu diberikan ke Docker Compose dengan `--env-file`.
 
 ```mermaid
 flowchart LR
-    DNS[DNS admniaga.com] --> Caddy[Caddy HTTPS :80/:443]
+    DNS[DNS kasta.admniaga.com] --> Caddy[Caddy HTTPS :80/:443]
     Caddy --> Web[SvelteKit web]
     Caddy --> API[FastAPI api]
     Caddy --> Minio[MinIO signed objects]
@@ -28,11 +28,29 @@ set `KASTA_MALWARE_SCAN_ENABLED=true` bila layanan scanner sudah dialokasikan re
 
 ## Domain dan reverse proxy
 
-| Domain                  | Tujuan                                       |
-| ----------------------- | -------------------------------------------- |
-| `kasta.admniaga.com`    | Redirect permanen ke `appkasta.admniaga.com` |
-| `appkasta.admniaga.com` | Website SvelteKit                            |
-| `apikasta.admniaga.com` | API FastAPI dan signed URL MinIO             |
+Seluruh stack dilayani dari satu hostname, `kasta.admniaga.com`:
+
+| Path                                             | Tujuan                       |
+| ------------------------------------------------ | ---------------------------- |
+| `/api/*`, `/docs*`, `/redoc*`, `/openapi.json`   | API FastAPI (`api:8000`)     |
+| `/kasta-receipts/*`, `/kasta-business-logos/*`   | Signed URL MinIO (`minio:9000`) |
+| selain itu                                        | Website SvelteKit (`web:3000`) |
+
+Prefix MinIO dibangun dari `KASTA_OBJECT_BUCKET_RECEIPTS` dan
+`KASTA_OBJECT_BUCKET_BUSINESS_LOGOS`; kedua variabel itu ikut diberikan ke service
+`caddy` sehingga matcher tetap sinkron bila nama bucket diganti.
+
+Dua hostname lama masih dilayani:
+
+| Domain                  | Status                                                   |
+| ----------------------- | -------------------------------------------------------- |
+| `appkasta.admniaga.com` | Redirect permanen ke `kasta.admniaga.com`                |
+| `apikasta.admniaga.com` | Alias yang masih berfungsi, bukan redirect (deprecated)  |
+
+`apikasta.admniaga.com` sengaja tidak diubah menjadi redirect: SigV4 menandatangani
+header Host sehingga signed URL yang sudah terbit akan gagal di balik 301, dan
+request non-GET tidak selamat melewati redirect. Hapus block tersebut dari
+Caddyfile setelah dipastikan tidak ada klien yang masih memakainya.
 
 `infrastructure/caddy/Caddyfile.production` mengatur routing tersebut. Caddy
 menerbitkan dan memperbarui sertifikat Let's Encrypt secara otomatis. DNS ketiga
@@ -131,8 +149,8 @@ lokal boleh dihapus.
 
 ## Health check dan observability
 
-- API liveness: `GET https://apikasta.admniaga.com/api/v1/health/live`.
-- API readiness: `GET https://apikasta.admniaga.com/api/v1/health/ready`.
+- API liveness: `GET https://kasta.admniaga.com/api/v1/health/live`.
+- API readiness: `GET https://kasta.admniaga.com/api/v1/health/ready`.
 - Compose menunggu PostgreSQL, MinIO, migration, role grant, API, dan web sehat.
 - Setiap container memakai Docker `json-file` dengan rotasi 20 MB × 5 file.
   Forward log ke collector terpusat sebelum volume log penuh.
@@ -159,7 +177,7 @@ Simpan minimal backup harian 35 hari dan backup bulanan sesuai kebijakan retensi
 Gunakan akun backup read-only dan endpoint internal atau tunnel admin:
 
 ```bash
-export MINIO_BACKUP_ENDPOINT='https://apikasta.admniaga.com'
+export MINIO_BACKUP_ENDPOINT='https://kasta.admniaga.com'
 export MINIO_BACKUP_ACCESS_KEY='backup-read-only'
 export MINIO_BACKUP_SECRET_KEY='SET_VIA_SECRET_MANAGER'
 export MINIO_BACKUP_BUCKET=kasta-receipts

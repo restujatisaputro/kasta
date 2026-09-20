@@ -1,3 +1,7 @@
+# Behind a Cloudflare Tunnel: TLS terminates at Cloudflare, so Caddy listens on
+# plain HTTP. kasta.admniaga.com serves the whole stack; see Caddyfile.production
+# for the same routing with Caddy-managed certificates.
+
 (kasta-security) {
 	encode zstd gzip
 	header {
@@ -10,15 +14,33 @@
 	}
 }
 
-http://kasta.admniaga.com {
-	redir https://appkasta.admniaga.com{uri} permanent
-}
-
-http://appkasta.admniaga.com {
+(kasta-routes) {
 	import kasta-security
-	reverse_proxy web:3000
+
+	@api path /api/* /docs* /redoc* /openapi.json
+	handle @api {
+		reverse_proxy api:8000
+	}
+
+	# Signed object URLs are path-style: /<bucket>/<object>.
+	@objects path /{$KASTA_OBJECT_BUCKET_RECEIPTS:kasta-receipts}/* /{$KASTA_OBJECT_BUCKET_BUSINESS_LOGOS:kasta-business-logos}/*
+	handle @objects {
+		reverse_proxy minio:9000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
 }
 
+http://kasta.admniaga.com {
+	import kasta-routes
+}
+
+# Deprecated hostname. Kept byte-for-byte as it was: the catch-all below
+# forwards every non-API path to MinIO, so signed object URLs keep working
+# whatever the bucket names are. Do not fold this into kasta-routes --
+# that would only match the two configured bucket prefixes and 404 the rest.
 http://apikasta.admniaga.com {
 	import kasta-security
 
@@ -30,4 +52,8 @@ http://apikasta.admniaga.com {
 	handle {
 		reverse_proxy minio:9000
 	}
+}
+
+http://appkasta.admniaga.com {
+	redir https://kasta.admniaga.com{uri} permanent
 }
