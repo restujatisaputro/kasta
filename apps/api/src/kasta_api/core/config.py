@@ -61,6 +61,7 @@ class Settings(BaseSettings):
     whatsapp_access_token: SecretStr | None = None
     whatsapp_template_name: str = "kasta_verification"
     whatsapp_template_language: str = "id"
+    whatsapp_template_otp_button: bool = True
     login_rate_window_seconds: int = Field(default=300, ge=60, le=3600)
     login_rate_max_attempts: int = Field(default=5, ge=2, le=20)
     login_rate_lock_seconds: int = Field(default=900, ge=60, le=86400)
