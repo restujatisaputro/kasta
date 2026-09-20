@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 
 ARG PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
 ARG PUBLIC_APP_ENVIRONMENT=local
@@ -13,7 +13,7 @@ COPY packages/contracts ./packages/contracts
 COPY packages/shared ./packages/shared
 RUN pnpm install --frozen-lockfile && pnpm --filter kasta_web build
 
-FROM node:22-alpine AS runtime
+FROM node:26-alpine AS runtime
 
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
