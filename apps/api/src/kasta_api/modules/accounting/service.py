@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 
 from fastapi import HTTPException, status
 
-from kasta_api.modules.accounting.constants import AccountKey
+from kasta_api.modules.accounting.constants import AccountKey, TransactionType
 from kasta_api.modules.accounting.engine import (
     AccountingValidationError,
     JournalDraft,
@@ -90,9 +90,7 @@ class JournalService:
             return existing
         total_debit = sum((line.debit_amount for line in lines), Decimal("0.00"))
         total_credit = sum((line.credit_amount for line in lines), Decimal("0.00"))
-        draft = JournalDraft(
-            lines=tuple(lines), total_debit=total_debit, total_credit=total_credit
-        )
+        draft = JournalDraft(lines=tuple(lines), total_debit=total_debit, total_credit=total_credit)
         try:
             JournalValidator.validate(draft)
             command = TransactionCommand(
