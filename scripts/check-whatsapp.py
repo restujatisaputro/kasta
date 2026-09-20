@@ -32,7 +32,7 @@ def graph_error_detail(body: bytes | None) -> str:
         return "tanpa isi respons"
     try:
         error = json.loads(body.decode("utf-8", errors="replace")).get("error", {})
-    except (ValueError, AttributeError):
+    except ValueError, AttributeError:
         return "isi respons bukan JSON"
     if not isinstance(error, dict):
         return "isi respons bukan JSON"
@@ -56,8 +56,11 @@ def main() -> int:
     phone_id = os.environ.get("KASTA_WHATSAPP_PHONE_NUMBER_ID")
     token = os.environ.get("KASTA_WHATSAPP_ACCESS_TOKEN")
     if not phone_id or not token:
-        print("KASTA_WHATSAPP_PHONE_NUMBER_ID dan KASTA_WHATSAPP_ACCESS_TOKEN "
-              "harus diisi lewat environment.", file=sys.stderr)
+        print(
+            "KASTA_WHATSAPP_PHONE_NUMBER_ID dan KASTA_WHATSAPP_ACCESS_TOKEN "
+            "harus diisi lewat environment.",
+            file=sys.stderr,
+        )
         return 2
 
     base = os.environ.get("KASTA_WHATSAPP_API_BASE_URL", "https://graph.facebook.com")
@@ -73,12 +76,14 @@ def main() -> int:
         {"type": "body", "parameters": [{"type": "text", "text": kode}]}
     ]
     if use_button:
-        components.append({
-            "type": "button",
-            "sub_type": "url",
-            "index": "0",
-            "parameters": [{"type": "text", "text": kode}],
-        })
+        components.append(
+            {
+                "type": "button",
+                "sub_type": "url",
+                "index": "0",
+                "parameters": [{"type": "text", "text": kode}],
+            }
+        )
 
     endpoint = f"{base.rstrip('/')}/{version}/{phone_id}/messages"
     body = {
@@ -90,7 +95,8 @@ def main() -> int:
     }
 
     print(f"endpoint : {endpoint}")
-    print(f"template : {template} (bahasa {language}, tombol OTP: {'ya' if use_button else 'tidak'})")
+    tombol = "ya" if use_button else "tidak"
+    print(f"template : {template} (bahasa {language}, tombol OTP: {tombol})")
     print(f"tujuan   : {destination}")
     print("-" * 60)
 
