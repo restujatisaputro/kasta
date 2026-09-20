@@ -103,7 +103,9 @@
             </p>
           </div>
         </div>
-        <div class="kasta-card kasta-hero-card relative -mt-12 overflow-hidden p-4 sm:-mt-16 sm:ml-8 sm:p-6">
+        <div
+          class="kasta-card kasta-hero-card relative -mt-12 overflow-hidden p-4 sm:-mt-16 sm:ml-8 sm:p-6"
+        >
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs font-bold text-[var(--text-muted)]">Ringkasan bulan ini</p>

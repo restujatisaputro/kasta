@@ -30,11 +30,11 @@ set `KASTA_MALWARE_SCAN_ENABLED=true` bila layanan scanner sudah dialokasikan re
 
 Seluruh stack dilayani dari satu hostname, `kasta.admniaga.com`:
 
-| Path                                             | Tujuan                       |
-| ------------------------------------------------ | ---------------------------- |
-| `/api/*`, `/docs*`, `/redoc*`, `/openapi.json`   | API FastAPI (`api:8000`)     |
-| `/kasta-receipts/*`, `/kasta-business-logos/*`   | Signed URL MinIO (`minio:9000`) |
-| selain itu                                        | Website SvelteKit (`web:3000`) |
+| Path                                           | Tujuan                          |
+| ---------------------------------------------- | ------------------------------- |
+| `/api/*`, `/docs*`, `/redoc*`, `/openapi.json` | API FastAPI (`api:8000`)        |
+| `/kasta-receipts/*`, `/kasta-business-logos/*` | Signed URL MinIO (`minio:9000`) |
+| selain itu                                     | Website SvelteKit (`web:3000`)  |
 
 Prefix MinIO dibangun dari `KASTA_OBJECT_BUCKET_RECEIPTS` dan
 `KASTA_OBJECT_BUCKET_BUSINESS_LOGOS`; kedua variabel itu ikut diberikan ke service
@@ -42,10 +42,10 @@ Prefix MinIO dibangun dari `KASTA_OBJECT_BUCKET_RECEIPTS` dan
 
 Dua hostname lama masih dilayani:
 
-| Domain                  | Status                                                   |
-| ----------------------- | -------------------------------------------------------- |
-| `appkasta.admniaga.com` | Redirect permanen ke `kasta.admniaga.com`                |
-| `apikasta.admniaga.com` | Alias yang masih berfungsi, bukan redirect (deprecated)  |
+| Domain                  | Status                                                  |
+| ----------------------- | ------------------------------------------------------- |
+| `appkasta.admniaga.com` | Redirect permanen ke `kasta.admniaga.com`               |
+| `apikasta.admniaga.com` | Alias yang masih berfungsi, bukan redirect (deprecated) |
 
 `apikasta.admniaga.com` sengaja tidak diubah menjadi redirect: SigV4 menandatangani
 header Host sehingga signed URL yang sudah terbit akan gagal di balik 301, dan

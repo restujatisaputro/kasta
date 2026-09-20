@@ -34,7 +34,9 @@
         {#each nav as item (item.href)}
           <a
             aria-current={active(item.href) ? 'page' : undefined}
-            class="kasta-nav-link rounded-xl px-4 py-2.5 text-sm font-bold transition {active(item.href)
+            class="kasta-nav-link rounded-xl px-4 py-2.5 text-sm font-bold transition {active(
+              item.href,
+            )
               ? 'bg-kasta-50 text-kasta-800 dark:bg-kasta-950 dark:text-kasta-200'
               : 'text-[var(--text-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]'}"
             href={item.href}>{item.label}</a

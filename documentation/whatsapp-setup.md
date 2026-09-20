@@ -109,14 +109,14 @@ kode HTTP.
 docker logs --tail 100 kasta-production-api-1 2>&1 | grep -i "whatsapp\|delivery failed"
 ```
 
-| Kode   | Arti                                              | Tindakan                                                    |
-| ------ | ------------------------------------------------- | ----------------------------------------------------------- |
+| Kode   | Arti                                              | Tindakan                                                       |
+| ------ | ------------------------------------------------- | -------------------------------------------------------------- |
 | 132000 | Jumlah parameter tidak cocok                      | Sesuaikan `KASTA_WHATSAPP_TEMPLATE_OTP_BUTTON` dengan template |
-| 132001 | Template tidak ditemukan pada bahasa tersebut     | Periksa nama template dan kode bahasa                        |
-| 132015 | Template belum disetujui atau sedang dijeda       | Tunggu persetujuan Meta                                      |
-| 131030 | Nomor tujuan belum terdaftar sebagai penerima tes | Tambahkan nomor pada daftar penerima                         |
-| 190    | Access token tidak valid atau kedaluwarsa         | Terbitkan token baru, gunakan System User untuk produksi     |
-| 133010 | Nomor pengirim belum terdaftar di Cloud API       | Selesaikan registrasi nomor pengirim                         |
+| 132001 | Template tidak ditemukan pada bahasa tersebut     | Periksa nama template dan kode bahasa                          |
+| 132015 | Template belum disetujui atau sedang dijeda       | Tunggu persetujuan Meta                                        |
+| 131030 | Nomor tujuan belum terdaftar sebagai penerima tes | Tambahkan nomor pada daftar penerima                           |
+| 190    | Access token tidak valid atau kedaluwarsa         | Terbitkan token baru, gunakan System User untuk produksi       |
+| 133010 | Nomor pengirim belum terdaftar di Cloud API       | Selesaikan registrasi nomor pengirim                           |
 
 Kegagalan tidak langsung menghanguskan pesan. Percobaan ulang memakai backoff
 bertingkat dari 5 detik hingga 8 jam, dengan batas sepuluh percobaan.
