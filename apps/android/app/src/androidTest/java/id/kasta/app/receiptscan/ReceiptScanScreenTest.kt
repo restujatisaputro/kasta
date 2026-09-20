@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import org.junit.Rule
 import org.junit.Test
 
@@ -41,8 +42,12 @@ class ReceiptScanScreenTest {
         }
 
         composeRule.onNodeWithText("Transaksi belum dibuat").assertIsDisplayed()
+        // Layar review adalah Column ber-verticalScroll; catatan dan tombol konfirmasi
+        // berada di bawah daftar field sehingga tidak terlihat tanpa digulir.
+        // assertIsDisplayed menuntut node benar-benar tampak, bukan sekadar tersusun.
         composeRule.onNodeWithText("KASTA hanya membuat transaksi setelah Anda menekan tombol konfirmasi.")
+            .performScrollTo()
             .assertIsDisplayed()
-        composeRule.onNodeWithTag("receipt-confirm").assertIsDisplayed()
+        composeRule.onNodeWithTag("receipt-confirm").performScrollTo().assertIsDisplayed()
     }
 }
