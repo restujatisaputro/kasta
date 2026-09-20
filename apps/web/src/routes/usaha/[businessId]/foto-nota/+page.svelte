@@ -1,5 +1,10 @@
 <script lang="ts">
-  import type { EntryKind, OptionItem, ReceiptReview, TransactionPaymentMethod } from '@kasta/contracts';
+  import type {
+    EntryKind,
+    OptionItem,
+    ReceiptReview,
+    TransactionPaymentMethod,
+  } from '@kasta/contracts';
 
   import Button from '$lib/components/Button.svelte';
   import Card from '$lib/components/Card.svelte';
@@ -11,7 +16,11 @@
   import Toast from '$lib/components/Toast.svelte';
   import { confirmReceiptScan, uploadReceiptScan } from '$lib/api/receipts';
   import { getTransactionOptions } from '$lib/api/transactions';
-  import { recognizeReceiptText, terminateReceiptOcr, type RecognizeProgress } from '$lib/ocr/receipt-ocr';
+  import {
+    recognizeReceiptText,
+    terminateReceiptOcr,
+    type RecognizeProgress,
+  } from '$lib/ocr/receipt-ocr';
   import { authSession } from '$lib/stores/auth-session';
   import { onDestroy } from 'svelte';
 
@@ -42,7 +51,6 @@
   let acknowledgeDuplicate = $state(false);
   let showConfirm = $state(false);
   let busy = $state(false);
-  let confirmedTransactionId = $state<string | null>(null);
 
   onDestroy(() => void terminateReceiptOcr());
 
@@ -71,7 +79,6 @@
     total = '';
     note = '';
     acknowledgeDuplicate = false;
-    confirmedTransactionId = null;
   }
 
   function selectFile(event: Event) {
@@ -117,7 +124,8 @@
       receiptDate = fieldValue('receipt_date') || receiptDate;
       total = fieldValue('total');
       const parsedCategory = fieldValue('category_account');
-      const fallbackCategory = (entryKind === 'INCOME' ? incomeCategories : expenseCategories)[0]?.value ?? '';
+      const fallbackCategory =
+        (entryKind === 'INCOME' ? incomeCategories : expenseCategories)[0]?.value ?? '';
       categoryAccount = parsedCategory || fallbackCategory;
       const parsedPayment = fieldValue('payment_method');
       paymentMethod = parsedPayment || 'CASH';
@@ -162,7 +170,7 @@
     showConfirm = false;
     busy = true;
     try {
-      const result = await confirmReceiptScan(data.businessId, $authSession.accessToken, receipt.id, {
+      await confirmReceiptScan(data.businessId, $authSession.accessToken, receipt.id, {
         corrections: {
           merchant_name: merchant.trim(),
           receipt_date: receiptDate,
@@ -174,7 +182,6 @@
         note: note.trim(),
         acknowledge_duplicate: acknowledgeDuplicate,
       });
-      confirmedTransactionId = result.transaction_id;
       stage = 'confirmed';
       message = 'Nota dikonfirmasi dan transaksi berhasil dibuat.';
     } catch (error) {
@@ -230,7 +237,9 @@
         </div>
         <p class="mt-3 text-center text-sm font-bold">{progressLabel}</p>
       </div>
-    {:else if stage === 'error'}<div class="mt-6 rounded-2xl bg-red-50 p-5 text-center dark:bg-red-950">
+    {:else if stage === 'error'}<div
+        class="mt-6 rounded-2xl bg-red-50 p-5 text-center dark:bg-red-950"
+      >
         <Icon name="close" size={32} />
         <h3 class="mt-2 font-black">Nota belum dapat diproses</h3>
         <p class="mt-2 text-sm text-[var(--text-muted)]">{errorMessage}</p>
@@ -257,7 +266,9 @@
       </div>
     {:else}<div class="mt-5 space-y-5">
         {#if receipt?.fields.some((item) => item.value)}
-          <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+          <div
+            class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900"
+          >
             <strong>Terbaca otomatis.</strong> Periksa dan perbaiki bila ada yang kurang tepat.
           </div>
         {:else}
@@ -271,7 +282,8 @@
             <ul class="mt-1 list-disc pl-5">
               {#each receipt.duplicate_candidates as candidate (candidate.id)}
                 <li>
-                  {candidate.merchant_name ?? 'Toko tidak diketahui'} · {candidate.receipt_date ?? '-'} ·
+                  {candidate.merchant_name ?? 'Toko tidak diketahui'} · {candidate.receipt_date ??
+                    '-'} ·
                   {candidate.total_amount ?? '-'}
                 </li>
               {/each}
@@ -298,7 +310,12 @@
           bind:value={merchant}
           placeholder="Contoh: Toko Maju"
           required
-        /><FormField id="receipt-date" label="Tanggal" type="date" bind:value={receiptDate} required
+        /><FormField
+          id="receipt-date"
+          label="Tanggal"
+          type="date"
+          bind:value={receiptDate}
+          required
         /><FormField
           id="receipt-total"
           label="Total belanja"
@@ -325,7 +342,9 @@
             bind:value={note}
           ></textarea>
         </div>
-        {#if errorMessage}<p class="text-sm font-bold text-red-700" role="alert">{errorMessage}</p>{/if}
+        {#if errorMessage}<p class="text-sm font-bold text-red-700" role="alert">
+            {errorMessage}
+          </p>{/if}
         <Button full onclick={requestConfirm} disabled={busy}
           >{busy ? 'Menyimpan…' : 'Konfirmasi hasil nota'}</Button
         >
