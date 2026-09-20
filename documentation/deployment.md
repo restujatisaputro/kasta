@@ -57,6 +57,44 @@ menerbitkan dan memperbarui sertifikat Let's Encrypt secara otomatis. DNS ketiga
 domain harus mengarah ke server dan port TCP/UDP 443 serta TCP 80 harus terbuka
 untuk ACME HTTP challenge. Bucket MinIO tetap private; jangan mengaktifkan anonymous read.
 
+## Memperbarui Caddyfile tanpa downtime
+
+Compose mem-bind-mount **satu berkas**, bukan direktori:
+`./infrastructure/caddy/Caddyfile.cloudflare:/etc/caddy/Caddyfile:ro`. Bind mount
+berkas tunggal terikat pada inode, bukan path. `git checkout`, `git pull`, dan
+sebagian besar editor menulis berkas baru lalu me-rename-nya, sehingga inode di
+host berubah sementara container tetap memegang inode lama.
+
+Akibatnya urutan berikut **tidak berefek** meski melaporkan sukses:
+
+```bash
+git checkout origin/main -- infrastructure/caddy/Caddyfile.cloudflare
+docker exec kasta-production-caddy-1 caddy reload --config /etc/caddy/Caddyfile
+```
+
+`caddy reload` membaca isi lama dan berhasil tanpa mengubah apa pun. Bandingkan
+inode di kedua sisi untuk memastikan:
+
+```bash
+stat -c '%i' /opt/kasta/infrastructure/caddy/Caddyfile.cloudflare
+docker exec kasta-production-caddy-1 stat -c '%i' /etc/caddy/Caddyfile
+```
+
+Bila berbeda, salin berkasnya ke dalam container lalu reload dari sana:
+
+```bash
+docker cp /opt/kasta/infrastructure/caddy/Caddyfile.cloudflare   kasta-production-caddy-1:/tmp/Caddyfile.new
+docker exec kasta-production-caddy-1 caddy reload   --config /tmp/Caddyfile.new --adapter caddyfile
+```
+
+Tidak ada state yang tertinggal: `docker restart` me-resolve ulang bind mount,
+sehingga container membaca berkas host yang baru saat restart berikutnya.
+Selalu verifikasi lewat perilaku, bukan lewat pesan sukses reload:
+
+```bash
+curl -si https://kasta.admniaga.com/api/v1/health/live | head -1
+```
+
 ## File dan image
 
 - `infrastructure/docker/api.Dockerfile`: build multi-stage Python 3.14, virtualenv
