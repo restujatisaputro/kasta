@@ -31,19 +31,23 @@ class ClosingRepository:
         return value or "MONTHLY"
 
     async def latest_closing(self, business_id: UUID) -> PeriodClosing | None:
-        return await self.session.scalar(
+        # session.scalar() bertipe Any, jadi hasilnya diikat ke variabel bertipe
+        # agar mypy tidak kehilangan tipe kembalian metode ini.
+        closing: PeriodClosing | None = await self.session.scalar(
             select(PeriodClosing)
             .where(PeriodClosing.business_id == business_id)
             .order_by(PeriodClosing.period_end.desc())
             .limit(1)
         )
+        return closing
 
     async def earliest_transaction_date(self, business_id: UUID) -> date | None:
-        return await self.session.scalar(
+        earliest: date | None = await self.session.scalar(
             select(func.min(FinancialTransaction.transaction_date)).where(
                 FinancialTransaction.business_id == business_id
             )
         )
+        return earliest
 
     async def list_closings(
         self, business_id: UUID, *, limit: int, offset: int
@@ -60,8 +64,8 @@ class ClosingRepository:
             ).all()
         )
         total = await self.session.scalar(
-            select(func.count()).select_from(PeriodClosing).where(
-                PeriodClosing.business_id == business_id
-            )
+            select(func.count())
+            .select_from(PeriodClosing)
+            .where(PeriodClosing.business_id == business_id)
         )
         return rows, total or 0

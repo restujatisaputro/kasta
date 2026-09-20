@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
@@ -18,8 +19,10 @@ class InventoryRepository:
     def add(self, instance: object) -> None:
         self.session.add(instance)
 
-    def add_all(self, instances: list[object]) -> None:
-        self.session.add_all(instances)
+    def add_all(self, instances: Iterable[object]) -> None:
+        # list bersifat invarian sehingga list[TransactionItem] bukan list[object];
+        # Iterable kovarian, mengikuti pola AccountingRepository.add_all.
+        self.session.add_all(list(instances))
 
     async def commit(self) -> None:
         await self.session.commit()
