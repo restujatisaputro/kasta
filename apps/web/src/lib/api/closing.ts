@@ -1,4 +1,9 @@
-import type { ClosePeriodRequest, CurrentPeriod, PeriodClosing, PeriodClosingList } from '@kasta/contracts';
+import type {
+  ClosePeriodRequest,
+  CurrentPeriod,
+  PeriodClosing,
+  PeriodClosingList,
+} from '@kasta/contracts';
 
 import { apiRequest, bearerHeaders } from './client';
 

@@ -1,4 +1,8 @@
-import type { ConfirmReceiptRequest, ConfirmReceiptResponse, ReceiptReview } from '@kasta/contracts';
+import type {
+  ConfirmReceiptRequest,
+  ConfirmReceiptResponse,
+  ReceiptReview,
+} from '@kasta/contracts';
 
 import { apiRequest, bearerHeaders } from './client';
 

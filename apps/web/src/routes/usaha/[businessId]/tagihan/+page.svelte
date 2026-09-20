@@ -116,7 +116,12 @@
       const payload: ObligationInput = settledOnCreate
         ? { ...form, due_date: form.transaction_date }
         : form;
-      const created = await createObligation(data.businessId, $authSession.accessToken, kind, payload);
+      const created = await createObligation(
+        data.businessId,
+        $authSession.accessToken,
+        kind,
+        payload,
+      );
       if (settledOnCreate) {
         await payObligation(data.businessId, $authSession.accessToken, kind, created.id, {
           amount: created.initial_amount,

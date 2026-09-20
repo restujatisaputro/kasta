@@ -105,14 +105,19 @@
 {#if notice}<p class="mt-4 rounded-xl bg-emerald-50 p-3 text-sm font-bold text-emerald-800">
     {notice}
   </p>{/if}
-{#if errorMessage}<p class="mt-4 rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700" role="alert">
+{#if errorMessage}<p
+    class="mt-4 rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700"
+    role="alert"
+  >
     {errorMessage}
   </p>{/if}
 
 {#if loading}
   <p class="mt-8 text-center text-[var(--text-muted)]">Memuat ringkasan periode…</p>
 {:else if !current}
-  <p class="mt-8 text-center text-[var(--text-muted)]">Masuk kembali untuk melihat ringkasan periode.</p>
+  <p class="mt-8 text-center text-[var(--text-muted)]">
+    Masuk kembali untuk melihat ringkasan periode.
+  </p>
 {:else}
   <div class="mt-6 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
     <Card>
@@ -206,8 +211,13 @@
           bind:value={note}
         ></textarea>
       </div>
-      <label class="mt-4 flex items-start gap-3 rounded-xl border border-[var(--border)] p-3 text-sm font-semibold"
-        ><input type="checkbox" class="mt-0.5 h-5 w-5 accent-kasta-700" bind:checked={acknowledged} />
+      <label
+        class="mt-4 flex items-start gap-3 rounded-xl border border-[var(--border)] p-3 text-sm font-semibold"
+        ><input
+          type="checkbox"
+          class="mt-0.5 h-5 w-5 accent-kasta-700"
+          bind:checked={acknowledged}
+        />
         Saya sudah memeriksa dan menyesuaikan seluruh transaksi periode ini.</label
       >
       <div class="mt-5">

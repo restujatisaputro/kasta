@@ -26,8 +26,16 @@
     help: string;
   }> = [
     { value: 'MONTHLY', label: 'Bulanan', help: 'Tutup setiap akhir bulan.' },
-    { value: 'SEMIANNUAL', label: '2 kali setahun', help: 'Tutup tiap 6 bulan (Jan–Jun, Jul–Des).' },
-    { value: 'TRIANNUAL', label: '3 kali setahun', help: 'Tutup tiap 4 bulan (Jan–Apr, Mei–Ags, Sep–Des).' },
+    {
+      value: 'SEMIANNUAL',
+      label: '2 kali setahun',
+      help: 'Tutup tiap 6 bulan (Jan–Jun, Jul–Des).',
+    },
+    {
+      value: 'TRIANNUAL',
+      label: '3 kali setahun',
+      help: 'Tutup tiap 4 bulan (Jan–Apr, Mei–Ags, Sep–Des).',
+    },
   ];
 
   function logout() {
@@ -55,8 +63,7 @@
       });
       modeNotice = 'Mode pencatatan diperbarui.';
     } catch (error) {
-      modeError =
-        error instanceof Error ? error.message : 'Mode pencatatan belum dapat disimpan.';
+      modeError = error instanceof Error ? error.message : 'Mode pencatatan belum dapat disimpan.';
     } finally {
       savingMode = false;
     }
@@ -97,8 +104,8 @@
     <Card>
       <h2 class="font-black">Mode pencatatan stok dan keuangan</h2>
       <p class="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-        Pilih apakah transaksi harus selalu memilih produk agar stok dan harga pokok penjualan
-        (HPP) terhubung otomatis ke keuangan.
+        Pilih apakah transaksi harus selalu memilih produk agar stok dan harga pokok penjualan (HPP)
+        terhubung otomatis ke keuangan.
       </p>
       <div class="mt-4 grid gap-2 sm:grid-cols-2">
         <button
@@ -131,13 +138,15 @@
         </button>
       </div>
       {#if modeNotice}<p class="mt-3 text-sm font-bold text-emerald-700">{modeNotice}</p>{/if}
-      {#if modeError}<p class="mt-3 text-sm font-bold text-red-700" role="alert">{modeError}</p>{/if}
+      {#if modeError}<p class="mt-3 text-sm font-bold text-red-700" role="alert">
+          {modeError}
+        </p>{/if}
     </Card>
     <Card>
       <h2 class="font-black">Jadwal tutup buku</h2>
       <p class="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-        Seberapa sering usaha ini biasanya menutup periode di halaman Tutup Buku. Ini cuma
-        pengingat jadwal &mdash; Anda tetap bisa menutup periode kapan saja.
+        Seberapa sering usaha ini biasanya menutup periode di halaman Tutup Buku. Ini cuma pengingat
+        jadwal &mdash; Anda tetap bisa menutup periode kapan saja.
       </p>
       <div class="mt-4 grid gap-2 sm:grid-cols-3">
         {#each FREQUENCY_OPTIONS as option (option.value)}
@@ -155,7 +164,9 @@
           </button>
         {/each}
       </div>
-      {#if frequencyNotice}<p class="mt-3 text-sm font-bold text-emerald-700">{frequencyNotice}</p>{/if}
+      {#if frequencyNotice}<p class="mt-3 text-sm font-bold text-emerald-700">
+          {frequencyNotice}
+        </p>{/if}
       {#if frequencyError}<p class="mt-3 text-sm font-bold text-red-700" role="alert">
           {frequencyError}
         </p>{/if}

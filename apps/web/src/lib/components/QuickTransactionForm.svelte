@@ -67,7 +67,9 @@
 
   const title = $derived(kind === 'INCOME' ? 'Catat Uang Masuk' : 'Catat Uang Keluar');
   const isCredit = $derived(payment === CREDIT);
-  const creditLabel = $derived(kind === 'INCOME' ? 'Piutang (terima nanti)' : 'Utang (bayar nanti)');
+  const creditLabel = $derived(
+    kind === 'INCOME' ? 'Piutang (terima nanti)' : 'Utang (bayar nanti)',
+  );
   const payments = $derived([
     ...basePayments,
     { value: CREDIT, label: creditLabel } satisfies OptionItem,
@@ -214,15 +216,20 @@
     try {
       if (isCredit) {
         const obligationKind = kind === 'INCOME' ? 'RECEIVABLE' : 'PAYABLE';
-        const created = await createObligation(businessId, $authSession.accessToken, obligationKind, {
-          party_name: counterparty.trim(),
-          initial_amount: normalizedAmount(),
-          transaction_date: date,
-          due_date: settledOnCreate ? date : dueDate,
-          note: note.trim(),
-          reminder_enabled: true,
-          reminder_days_before: 3,
-        });
+        const created = await createObligation(
+          businessId,
+          $authSession.accessToken,
+          obligationKind,
+          {
+            party_name: counterparty.trim(),
+            initial_amount: normalizedAmount(),
+            transaction_date: date,
+            due_date: settledOnCreate ? date : dueDate,
+            note: note.trim(),
+            reminder_enabled: true,
+            reminder_days_before: 3,
+          },
+        );
         if (settledOnCreate) {
           await payObligation(businessId, $authSession.accessToken, obligationKind, created.id, {
             amount: created.initial_amount,
@@ -350,10 +357,8 @@
                   class="text-red-600">*</span
                 >{/if}</span
             >
-            <button
-              type="button"
-              class="text-xs font-bold text-kasta-700"
-              onclick={addItemRow}>+ Tambah produk</button
+            <button type="button" class="text-xs font-bold text-kasta-700" onclick={addItemRow}
+              >+ Tambah produk</button
             >
           </div>
           {#if products.length === 0}
@@ -368,8 +373,9 @@
                 bind:value={row.productId}
                 onchange={() => onProductPicked(index)}
                 aria-label="Produk"
-                ><option value="">Pilih produk</option>{#each products as product (product.id)}<option
-                    value={product.id}>{productLabel(product)}</option
+                ><option value="">Pilih produk</option
+                >{#each products as product (product.id)}<option value={product.id}
+                    >{productLabel(product)}</option
                   >{/each}</select
               >
               <input
@@ -413,11 +419,8 @@
       {#if isCredit}
         <label
           class="flex min-h-12 items-center gap-3 rounded-xl border border-[var(--border)] p-3 text-sm font-bold"
-          ><input
-            type="checkbox"
-            class="h-5 w-5 accent-kasta-700"
-            bind:checked={settledOnCreate}
-          /> Sudah lunas sejak dicatat</label
+          ><input type="checkbox" class="h-5 w-5 accent-kasta-700" bind:checked={settledOnCreate} /> Sudah
+          lunas sejak dicatat</label
         >
         {#if settledOnCreate}
           <SelectField
@@ -491,7 +494,9 @@
           <ul class="mt-1 space-y-1">
             {#each itemRows as row (row.productId)}
               <li class="flex justify-between">
-                <span>{products.find((product) => product.id === row.productId)?.name ?? '—'} × {row.quantity}</span>
+                <span
+                  >{products.find((product) => product.id === row.productId)?.name ?? '—'} × {row.quantity}</span
+                >
                 <span class="font-bold"
                   >{rupiah(String(Number(row.quantity) * Number(row.unitPrice)))}</span
                 >

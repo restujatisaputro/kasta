@@ -21,7 +21,8 @@ async function getWorker(): Promise<Worker> {
   if (!workerPromise) {
     const { createWorker } = await import('tesseract.js');
     workerPromise = createWorker('ind+eng', undefined, {
-      logger: (message) => currentProgressListener?.({ status: message.status, progress: message.progress }),
+      logger: (message) =>
+        currentProgressListener?.({ status: message.status, progress: message.progress }),
     }).catch((error: unknown) => {
       workerPromise = null;
       throw error;
