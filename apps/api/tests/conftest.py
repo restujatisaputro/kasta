@@ -10,6 +10,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
+from kasta_api.core.security import RateLimitMiddleware
 from kasta_api.db import models as mapped_models  # noqa: F401
 from kasta_api.db.base import Base
 from kasta_api.db.session import get_db_session
@@ -42,8 +43,25 @@ def anyio_backend() -> str:
     return "asyncio"
 
 
+def _reset_rate_limiter() -> None:
+    """Kosongkan jendela rate limit sebelum setiap test.
+
+    ``app`` adalah singleton tingkat modul, sehingga state RateLimitMiddleware
+    bertahan lintas test meski database dibuat ulang. Seluruh test menembak dari
+    IP yang sama ke bucket ``auth``, jadi tanpa pengosongan ini satu jendela 60
+    detik dibagi seluruh suite dan test yang berjalan belakangan menerima 429.
+    """
+    node = getattr(app, "middleware_stack", None)
+    while node is not None:
+        if isinstance(node, RateLimitMiddleware):
+            node.reset()
+            return
+        node = getattr(node, "app", None)
+
+
 @pytest.fixture
 async def auth_environment() -> AsyncIterator[AuthTestEnvironment]:
+    _reset_rate_limiter()
     engine = create_async_engine(
         "sqlite+aiosqlite://",
         connect_args={"check_same_thread": False},

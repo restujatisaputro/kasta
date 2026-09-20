@@ -83,6 +83,16 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._requests: defaultdict[str, deque[float]] = defaultdict(deque)
         self._lock = asyncio.Lock()
 
+    def reset(self) -> None:
+        """Kosongkan jendela penghitung.
+
+        Middleware ini menyimpan state per proses, sedangkan test memakai satu
+        instance ``app`` untuk seluruh berkas test dan menembak dari IP yang sama.
+        Tanpa pengosongan antar test, jendela 60 detik dibagi seluruh suite
+        sehingga lulus atau tidaknya bergantung pada kecepatan mesin.
+        """
+        self._requests.clear()
+
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         limit = self._limit_for(request)
         if limit is None:
