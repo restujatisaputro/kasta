@@ -9,9 +9,18 @@
         android:name="android.hardware.camera.any"
         android:required="false" />
 
+    <!--
+      allowBackup="false" mematikan backup pada API di bawah 31; sejak Android 12
+      atribut itu hanya mengatur cloud backup sehingga transfer antar-perangkat
+      perlu diatur terpisah lewat dataExtractionRules. Lint meminta
+      fullBackupContent karena minSdk 23, tetapi resource itu hanya berpengaruh
+      ketika allowBackup bernilai true; di sini backup sudah mati sepenuhnya pada
+      versi tersebut, jadi peringatan itu sengaja dibiarkan.
+    -->
     <application
         android:name=".KastaApplication"
         android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@drawable/ic_launcher"
