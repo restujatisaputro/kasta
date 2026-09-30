@@ -23,6 +23,11 @@ class JsonFormatter(logging.Formatter):
         "user_id",
         "business_id",
         "session_id",
+        "outbox_id",
+        "template",
+        "whatsapp_message_id",
+        "whatsapp_status",
+        "recipient",
     )
 
     def format(self, record: logging.LogRecord) -> str:

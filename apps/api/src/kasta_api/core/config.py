@@ -62,6 +62,8 @@ class Settings(BaseSettings):
     whatsapp_template_name: str = "kasta_verification"
     whatsapp_template_language: str = "id"
     whatsapp_template_otp_button: bool = True
+    whatsapp_webhook_verify_token: SecretStr | None = None
+    whatsapp_app_secret: SecretStr | None = None
     login_rate_window_seconds: int = Field(default=300, ge=60, le=3600)
     login_rate_max_attempts: int = Field(default=5, ge=2, le=20)
     login_rate_lock_seconds: int = Field(default=900, ge=60, le=86400)
@@ -118,6 +120,15 @@ class Settings(BaseSettings):
                 raise ValueError(f"Trusted proxy CIDR tidak valid: {value}") from exc
         return values
 
+    @field_validator("whatsapp_webhook_verify_token", "whatsapp_app_secret", mode="before")
+    @classmethod
+    def blank_webhook_secret_is_unset(cls, value: object) -> object:
+        # Compose meneruskan variabel yang tidak diisi sebagai string kosong.
+        # Secret kosong harus berarti "belum dikonfigurasi", bukan kunci HMAC "".
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
     @model_validator(mode="after")
     def reject_unsafe_production_settings(self) -> Settings:
         signing_key = self.jwt_signing_key.get_secret_value()
@@ -149,6 +160,11 @@ class Settings(BaseSettings):
             raise ValueError(
                 "KASTA_WHATSAPP_PHONE_NUMBER_ID dan KASTA_WHATSAPP_ACCESS_TOKEN wajib diisi "
                 "saat KASTA_WHATSAPP_ENABLED aktif"
+            )
+        if (self.whatsapp_webhook_verify_token is None) != (self.whatsapp_app_secret is None):
+            raise ValueError(
+                "KASTA_WHATSAPP_WEBHOOK_VERIFY_TOKEN dan KASTA_WHATSAPP_APP_SECRET harus diisi "
+                "bersamaan agar webhook WhatsApp dapat diverifikasi"
             )
         return self
 

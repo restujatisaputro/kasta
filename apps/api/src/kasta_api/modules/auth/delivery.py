@@ -95,7 +95,7 @@ def _send_message(settings: Settings, message: EmailMessage) -> None:
         smtp.send_message(message, from_addr=parseaddr(settings.mail_from)[1])
 
 
-def _send_whatsapp_message(settings: Settings, destination: str, payload: dict[str, str]) -> None:
+def _send_whatsapp_message(settings: Settings, destination: str, payload: dict[str, str]) -> str:
     purpose = payload["purpose"]
     if purpose not in {"VERIFY_PHONE", "RESET_PASSWORD"}:
         raise ValueError(f"Template WhatsApp tidak didukung: {purpose}")
@@ -156,8 +156,11 @@ def _send_whatsapp_message(settings: Settings, destination: str, payload: dict[s
     except URLError as exc:
         raise RuntimeError("WhatsApp API tidak dapat dihubungi") from exc
 
-    if not response_body.get("messages"):
+    messages = response_body.get("messages")
+    if not messages:
         raise RuntimeError("WhatsApp API tidak mengembalikan message id")
+    # Message id (wamid) dipakai untuk mencocokkan status dari webhook.
+    return str(messages[0].get("id", ""))
 
 
 async def _deliver_batch(settings: Settings, cipher: OutboxCipher) -> int:
@@ -192,6 +195,7 @@ async def _deliver_batch(settings: Settings, cipher: OutboxCipher) -> int:
         for row in rows:
             if not _is_ready_for_retry(row.attempts, row.updated_at, now):
                 continue
+            extra: dict[str, object] = {"outbox_id": str(row.id), "template": row.template}
             try:
                 payload = cipher.decrypt(row.payload_nonce, row.payload_ciphertext)
                 if row.channel == "EMAIL":
@@ -199,20 +203,14 @@ async def _deliver_batch(settings: Settings, cipher: OutboxCipher) -> int:
                     await asyncio.to_thread(_send_message, settings, message)
                     log_message = "Authentication email delivered"
                 else:
-                    await asyncio.to_thread(
+                    extra["whatsapp_message_id"] = await asyncio.to_thread(
                         _send_whatsapp_message, settings, row.destination, payload
                     )
                     log_message = "Authentication WhatsApp message delivered"
                 row.sent_at = utc_now()
-                logger.info(
-                    log_message,
-                    extra={"outbox_id": str(row.id), "template": row.template},
-                )
+                logger.info(log_message, extra=extra)
             except Exception:
-                logger.exception(
-                    "Authentication message delivery failed",
-                    extra={"outbox_id": str(row.id), "template": row.template},
-                )
+                logger.exception("Authentication message delivery failed", extra=extra)
             finally:
                 row.attempts += 1
         await session.commit()

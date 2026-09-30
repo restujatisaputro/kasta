@@ -100,6 +100,38 @@ saat `KASTA_WHATSAPP_ENABLED=true`; API menolak start bila kosong.
 Perubahan environment memerlukan container API dijalankan ulang, bukan sekadar
 reload.
 
+### 7. Pasang webhook status pengiriman
+
+Respons Graph API `200` hanya berarti Meta menerima permintaan, bukan pesan sampai.
+Kegagalan seperti nomor tidak terjangkau (131026) baru dilaporkan belakangan lewat
+webhook. KASTA mencatat status itu di log; pesan masuk diabaikan.
+
+1. Buat verify token acak, misalnya `openssl rand -hex 32`.
+2. Salin **App secret** dari **App settings > Basic** di aplikasi Meta.
+3. Tambahkan keduanya ke `/opt/kasta/.env.production`, lalu jalankan ulang container
+   API. Keduanya wajib diisi bersamaan; bila keduanya kosong, endpoint menjawab 404.
+
+   ```properties
+   KASTA_WHATSAPP_WEBHOOK_VERIFY_TOKEN=<verify token>
+   KASTA_WHATSAPP_APP_SECRET=<app secret>
+   ```
+
+4. Di **WhatsApp > Configuration > Webhook**, pilih **Edit** dan isi:
+
+   | Field        | Nilai                                                 |
+   | ------------ | ----------------------------------------------------- |
+   | Callback URL | `https://kasta.admniaga.com/api/v1/webhooks/whatsapp` |
+   | Verify token | verify token dari langkah 1                           |
+
+   Meta langsung memanggil `GET` dengan `hub.challenge`; tombol **Verify and save**
+   hanya berhasil bila container sudah memuat token yang sama.
+
+5. Pada daftar **Webhook fields**, **Subscribe** ke `messages`. Field ini membawa
+   status `sent`, `delivered`, `read`, dan `failed`.
+
+Setiap `POST` divalidasi dengan header `X-Hub-Signature-256` (HMAC-SHA256 isi
+permintaan memakai app secret). Tanda tangan yang salah dijawab `401`.
+
 ## Membaca kegagalan
 
 Sejak perbaikan pada `delivery.py`, isi error Graph API ikut tercatat, bukan hanya
@@ -107,6 +139,13 @@ kode HTTP.
 
 ```bash
 docker logs --tail 100 kasta-production-api-1 2>&1 | grep -i "whatsapp\|delivery failed"
+```
+
+Log pengiriman memuat `whatsapp_message_id`; cari id yang sama untuk melihat status
+lanjutan yang dilaporkan webhook:
+
+```bash
+docker logs kasta-production-api-1 2>&1 | grep "wamid.<id>"
 ```
 
 | Kode   | Arti                                              | Tindakan                                                       |
@@ -117,6 +156,7 @@ docker logs --tail 100 kasta-production-api-1 2>&1 | grep -i "whatsapp\|delivery
 | 131030 | Nomor tujuan belum terdaftar sebagai penerima tes | Tambahkan nomor pada daftar penerima                           |
 | 190    | Access token tidak valid atau kedaluwarsa         | Terbitkan token baru, gunakan System User untuk produksi       |
 | 133010 | Nomor pengirim belum terdaftar di Cloud API       | Selesaikan registrasi nomor pengirim                           |
+| 131026 | Pesan tidak dapat diantar (via webhook)           | Pastikan nomor tujuan aktif di WhatsApp                        |
 
 Kegagalan tidak langsung menghanguskan pesan. Percobaan ulang memakai backoff
 bertingkat dari 5 detik hingga 8 jam, dengan batas sepuluh percobaan.

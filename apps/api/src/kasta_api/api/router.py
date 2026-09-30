@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from kasta_api.api.routes import health
 from kasta_api.modules.accounting import router as accounting
 from kasta_api.modules.auth import router as auth
+from kasta_api.modules.auth import whatsapp_webhook
 from kasta_api.modules.businesses import router as businesses
 from kasta_api.modules.closing import router as closing
 from kasta_api.modules.inventory import router as inventory
@@ -23,6 +24,7 @@ from kasta_api.modules.transactions import router as transactions
 api_router = APIRouter()
 api_router.include_router(health.router, prefix="/health", tags=["system"])
 api_router.include_router(auth.router, tags=["auth"])
+api_router.include_router(whatsapp_webhook.router, tags=["auth"])
 api_router.include_router(businesses.router, tags=["businesses"])
 api_router.include_router(inventory, tags=["inventory"])
 api_router.include_router(accounting, tags=["accounting"])
